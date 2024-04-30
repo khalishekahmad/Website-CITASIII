@@ -17,7 +17,7 @@ def app():
 
     st.subheader("Website Citasi")
 
-    image_url = "https://raw.githubusercontent.com/ardhien50/Website-Citasi/5b4d6b7fec0fb19694c53f5e25d6056e744beb0f/WebsiteCitasi/Gambar/Logo%20Web%20Citasi.png"
+    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Logo%20Web%20Citasi.png?raw=true"
     try:
         image = fetch_image_from_url(image_url)
         resized_image = image.copy()
@@ -33,7 +33,7 @@ def app():
     
     st.subheader("1. KNN with Euclidean Distance")
 
-    image_url = "https://raw.githubusercontent.com/ardhien50/Website-Citasi/main/WebsiteCitasi/Gambar/knn.png"
+    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/knn.png?raw=true"
     try:
         image = fetch_image_from_url(image_url)
         resized_image = image.copy()
@@ -48,7 +48,7 @@ def app():
 
     st.subheader("2. Artificial Neural Network")
 
-    image_url = "https://raw.githubusercontent.com/ardhien50/Website-Citasi/main/WebsiteCitasi/Gambar/Neural-Networks-Architecture.png"
+    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Neural-Networks-Architecture.png?raw=true"
     try:
         image = fetch_image_from_url(image_url)
         resized_image = image.copy()
@@ -64,7 +64,7 @@ def app():
 
     st.subheader("3. Gaussian Naive Bayes")
 
-    image_url = "https://raw.githubusercontent.com/ardhien50/Website-Citasi/main/WebsiteCitasi/Gambar/GNB.png"
+    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/GNB.png?raw=true"
     try:
         image = fetch_image_from_url(image_url)
         resized_image = image.copy()

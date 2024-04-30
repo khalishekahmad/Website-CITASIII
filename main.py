@@ -5,7 +5,7 @@ from streamlit_option_menu import option_menu
 import account,kalkulator,metode,penjelasan
 st.set_page_config(
         page_title="Citasi",
-        page_icon="https://raw.githubusercontent.com/ardhien50/Website-Citasi/5b4d6b7fec0fb19694c53f5e25d6056e744beb0f/WebsiteCitasi/Gambar/Logo%20Web%20Citasi.png",  # Ganti dengan URL logo Anda
+        page_icon="https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Logo%20Web%20Citasi.png?raw=true",  # Ganti dengan URL logo Anda
         layout="centered"  # Layout halaman
 )
 
