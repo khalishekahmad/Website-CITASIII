@@ -32,6 +32,32 @@ def app():
                 title=f'<b>Class by {groupby_column}</b>'
             )
             st.plotly_chart(fig)
+    
+    elif choice == ('Manual'):
+        
+            st.subheader('Silahkan masukkan data kualitas :blue[Air Sungai] secara manual')
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                pH = st.text_input('Input Nilai pH')
+            with col1:
+                TSS = st.text_input('Input Nilai TSS')
+            with col1:
+                DO = st.text_input('Input Nilai DO')
+            with col2:
+                BOD = st.text_input('Input Nilai BOD')
+            with col2:
+                COD = st.text_input('Input Nilai COD')
+            with col2:
+                Nitrat = st.text_input('Input Nilai Nitrat')
+            with col3:
+                FecalColiform = st.text_input('Input Nilai FecalColiform')
+            with col3:
+                Fosfat = st.text_input('Input Nilai Fosfat')
+            with col3:
+                IP = st.text_input('Input Nilai IP')
+
+            features = [pH, TSS, DO, BOD, COD, Nitrat, FecalColiform, Fosfat, IP]
 
 
 app()
