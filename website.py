@@ -1,79 +1,53 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import pydeck as pdk
 
+def app():
+    st.subheader('KNN with Euclidean Distance')
 
-# Inisialisasi session_state
-if 'loggedin' not in st.session_state:
-    st.session_state.loggedin = False
+    html_code = """
+    <div id="map" style="height: 500px; width: 100%;"></div>
+    <p id="marker_info" style="font-weight: bold;"></p>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <script>
+        var locations = {
+            "Titik Sungai: Situ Cisanti<br>Alamat: Neglawangi, Kertasari,<br>Bandung Regency, West Java 40386": [-7.208484677933202, 107.65792566573455],  // Source of the Citarum River
+            "Titik Sungai: Bendungan Saguling<br>Alamat: Saguling, Batujajar,<br>West Bandung Regency, West Java ": [-6.913526, 107.367661], // Saguling Dam
+            "Titik Sungai: Bendungan Cirata<br>Alamat: Citamiang, Maniis,<br>Purwakarta Regency, West Java 41166": [-6.700203, 107.364963], // Cirata Dam
+            "Titik Sungai: Bendungan Jatiluhur<br>Alamat: Kutamanah, Sukasari,<br>Purwakarta Regency, West Java 41116": [-6.526997, 107.385456], // Jatiluhur Dam
+            "Titik Sungai: Kabupaten Karawang<br>Alamat: Sungai Citarum, Telukjambe Timur,<br>Karawang, West Java 41361": [-6.298185, 107.287757],  // Karawang Regency
+            "Titik Sungai: Muara Gembong<br>Alamat: Kecamatan Muara Gembong,<br>Bekasi Regency, West Java": [-5.984462, 107.043829], // Bekasi
+            "Titik Sungai: Sungai Cikapundung<br>Alamat: Bandung City, West Java": [-6.898969, 107.606402],  // Bandung City
+            "Titik Sungai: Dayeuhkolot<br>Alamat: Dayeuhkolot, Bandung, West Java": [-6.990974, 107.626285]  // Dayeuhkolot
+        };
 
-st.set_page_config(page_title="Website CITASI", page_icon="https://raw.githubusercontent.com/khalishekahmad/test1/main/Logo%20Web%20Citasi.png", layout="centered")
+        var map = L.map('map').setView([-6.8650, 107.4912], 10);
 
-def main():
-    if st.session_state.loggedin:
-        dashboard_page()
-    else:
-        login_page()
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-def login_page():
-    st.title("LOGIN")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.image("https://raw.githubusercontent.com/khalishekahmad/test1/main/Logo%20Web%20Citasi.png", width=200)
-        st.text("CITASI\nCitarum Quality\nWater Classification")
-    
-    with col2:
-        email = st.text_input("Email")
-        password = st.text_input("Password", type='password')
-        
-        if st.button("Lanjut"):
-            if email and password:  # Tambahkan logika otentikasi Anda di sini
-                st.success(f"Selamat datang, {email}!")
-                st.session_state.loggedin = True
-                st.rerun()
-            else:
-                st.warning("Harap isi kolomnya!.")
-                
-        if not email and not password:
-            signup_text = "Belum Punya Akun? Sign-Up"
-            if st.button(signup_text):
-                # Anda dapat mengarahkan pengguna ke halaman pendaftaran atau menampilkan formulir pendaftaran di sini
-                pass
+        Object.keys(locations).forEach(function(place) {
+            var coord = locations[place];
+            var marker = L.marker(coord).addTo(map);
+            marker.bindPopup(place);
+            marker.on('click', function() {
+                handleMarkerClick(marker, place);
+            });
+        });
 
-def dashboard_page():
-    st.title("Dashboard Page")
-    # Tambahkan elemen dashboard di sini
-    df = pd.DataFrame({
-        'lat': [-6.9175],  # Koordinat latitude Bandung
-        'lon': [107.6191]  # Koordinat longitude Bandung
-    })
+        function handleMarkerClick(marker, place) {
+            var info_paragraph = document.getElementById("marker_info");
+            info_paragraph.innerHTML = place;
+            var command = "place_clicked:" + place;
+            Streamlit.setComponentValue(command);
+        }
+    </script>
+    """
+    st.components.v1.html(html_code, height=600)
 
-    # Menggunakan PyDeck untuk mengubah warna peta dan menambahkan label
-    view_state = pdk.ViewState(
-        latitude=df['lat'].mean(),
-        longitude=df['lon'].mean(),
-        zoom=10,
-        pitch=0)
+    if st.session_state.get("clicked_marker"):
+        place = st.session_state.get("clicked_marker").split(":")[1]
+        st.write(place)
 
-    # Membuat layer peta
-    layer = pdk.Layer(
-        'ScatterplotLayer',
-        df,
-        get_position='[lon, lat]',
-        get_fill_color='[200, 30, 0, 160]',
-        get_radius=200,
-    )
-
-    # Menampilkan peta dengan layer yang telah dibuat
-    r = pdk.Deck(layers=[layer], initial_view_state=view_state,
-                 map_style='mapbox://styles/mapbox/light-v9')
-    st.pydeck_chart(r)
-
-    st.map(df)
-
-if __name__ == "__main__":
-    main()
-
+app()
