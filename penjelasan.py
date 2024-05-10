@@ -116,6 +116,34 @@ def app():
     st.write('IP Rating Kode IP atau International Protection Rating, sering juga diinterpretasikan sebagai Ingress Protection Rating* terdiri dari huruf IP diikuti oleh dua digit dan huruf tambahan. didefinisikan dalam standar internasional IEC 60529, itu mengklasifikasikan derajat perlindungan yang diberikan terhadap intrusi benda padat (termasuk bagian tubuh seperti tangan dan jari), debu, kontak tidak disengaja, dan udara pada yang mengandung listrik.')
     st.link_button('Baca Selengkapnya', 'https://multimeter-digital.com/ip-rating-tingkat-ketahanan-alat-terhadap-lingkungan.html')
 
+    st.subheader('Team Capstone')
+    with st.container():
+        col1, col2, col3 = st.columns(3)
+
+    with col1:
+        image_div = st.empty()
+        st.write("") # tambahkan baris kosong untuk jarak
+
+        caption_div = st.empty()
+        caption_div.markdown('**Daffa Asyqar Ahmad Khalisheka**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">',unsafe_allow_html=True)
+        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/7fd1c29aedcdb9420c973e1fd7595b6b.jpg?raw=true', width=200, use_column_width=True)
+
+    with col2:
+        image_div = st.empty()
+        st.write("") # tambahkan baris kosong untuk jarak
+
+        caption_div = st.empty()
+        caption_div.markdown('**Rai Barokah Utari**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">',unsafe_allow_html=True)
+        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/39498.jpg?raw=true', width=200, use_column_width=True)
+
+    with col3:
+        image_div = st.empty()
+        st.write("") # tambahkan baris kosong untuk jarak
+
+        caption_div = st.empty()
+        caption_div.markdown('**Ardhien Fadhillah Suhartono**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">',unsafe_allow_html=True)
+        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Capture.PNG?raw=true', width=200, use_column_width=True)
+
 # Run the app
 if __name__ == '__main__':
     app()
