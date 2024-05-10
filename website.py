@@ -4,6 +4,31 @@ def app():
     st.write('Metode')
     st.title('Titik Peta Sungai :blue[Citarum]')
 
+    # Membuat tiga kolom
+    col1, col2, col3 = st.columns(3)
+
+    # Informasi untuk setiap kotak
+    boxes_info = [
+        {"title": "Kotor", "color": "#FF5733"},
+        {"title": "Bersih", "color": "#33FF57"},
+        {"title": "Tidak Tersedia", "color": "#3357FF"}
+    ]
+
+    # Menampilkan setiap kotak di dalam kolom yang berbeda
+    for box in boxes_info:
+        with col1:  # Menambahkan kotak ke kolom pertama
+            st.subheader(box["title"])
+            st.markdown(f'<div style="width: 100px; height: 100px; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
+
+        with col2:  # Menambahkan kotak ke kolom kedua
+            st.subheader(box["title"])
+            st.markdown(f'<div style="width: 100px; height: 100px; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
+
+        with col3:  # Menambahkan kotak ke kolom ketiga
+            st.subheader(box["title"])
+            st.markdown(f'<div style="width: 100px; height: 100px; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
+
+
     choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['KNN with Euclidean Distance','Artificial Neural Network', 'Gaussian Naive Bayes'])
 
     if choice == ('KNN with Euclidean Distance'):
