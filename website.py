@@ -1,194 +1,79 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
 
 def app():
-    st.write('Metode')
-    st.title('Titik Peta Sungai :blue[Citarum]')
+    st.write('Kalkulator')
+    st.title('Kalkulator')
 
-    st.write('')
-    choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['KNN with Euclidean Distance','Artificial Neural Network', 'Gaussian Naive Bayes'])
+    choice = st.selectbox('Manual atau Upload File', ['Manual','Upload File'])
 
-    st.subheader('Keterangan Warna')
-    # Informasi untuk setiap kotak dengan ukuran yang diinginkan
-    boxes_info = [
-        {"title": "Memenuhi Baku Mutu", "color": "#6DC5D1", "width": "50px", "height": "50px"},
-        {"title": "Tercemar Ringan", "color": "#7ABA78", "width": "50px", "height": "50px"},
-        {"title": "Tercemar Sedang", "color": "#FDDE55", "width": "50px", "height": "50px"},
-        {"title": "Tercemar Berat", "color": "#C40C0C", "width": "50px", "height": "50px"}
-    ]
+    if choice == ('Upload File'):
+        st.subheader('Silahkan Upload File Dalam Bentuk CSV')
+        uploaded_file = st.file_uploader('Choose a CSV file', type='csv')
+        if uploaded_file:
+            st.markdown('---')
+            df = pd.read_csv(uploaded_file)
+            st.dataframe(df)
+            groupby_column = st.selectbox(
+                'Pilih kolom untuk dianalisis',
+                ('pH', 'TSS', 'DO', 'BOD', 'COD', 'Nitrat', 'FecalColiform', 'Fosfat', 'IP'),
+            )
 
-    # Membuat empat kolom
-    col1, col2, col3, col4 = st.columns(4)
+            # Plot data berdasarkan kolom yang dipilih
+            fig = px.bar(
+                df,
+                x=groupby_column,
+                y='Class',
+                color='Class',
+                title=f'<b>Analisis Class berdasarkan {groupby_column}</b>',
+                template='plotly_white'
+            )
+            st.plotly_chart(fig)
+    
+    elif choice == ('Manual'):
+        
+        st.subheader('Silahkan masukkan data kualitas :blue[Air Sungai] secara manual')
+        col1, col2, col3 = st.columns(3)
 
-    # Menampilkan setiap kotak di dalam kolom yang berbeda
-    with col1:
-        box = boxes_info[0]
-        st.write(box["title"])
-        st.markdown(f'<div style="width: {box["width"]}; height: {box["height"]}; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
+        with col1:
+            pH = st.text_input('Input Nilai pH', value=('6-8'))
+            TSS = st.text_input('Input Nilai TSS', value=('20-36 mg/L'))
+            DO = st.text_input('Input Nilai DO', value=('0,00-7,79 mg/L'))
+        with col2:
+            BOD = st.text_input('Input Nilai BOD', value=('1,7-6 mg/L'))
+            COD = st.text_input('Input Nilai COD', value=('10-30 mg/L'))
+            Nitrat = st.text_input('Input Nilai Nitrat', value=('0-4 mg/L'))
+        with col3:
+            FecalColiform = st.text_input('Input Nilai FecalColiform', value=('50-100 jml/100L'))
+            Fosfat = st.text_input('Input Nilai Fosfat', value=('0,03-0,1 mg/L'))
+            IP = st.text_input('Input Nilai IP', value=('Belum Tau'))
 
-    with col2:
-        box = boxes_info[1]
-        st.write(box["title"])
-        st.markdown(f'<div style="width: {box["width"]}; height: {box["height"]}; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
-
-    with col3:
-        box = boxes_info[2]
-        st.write(box["title"])
-        st.markdown(f'<div style="width: {box["width"]}; height: {box["height"]}; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
-
-    with col4:
-        box = boxes_info[3]
-        st.write(box["title"])
-        st.markdown(f'<div style="width: {box["width"]}; height: {box["height"]}; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
-
-    if choice == ('KNN with Euclidean Distance'):
-        st.subheader('KNN with Euclidean Distance')
-
-        html_code = """
-        <div id="map" style="height: 500px; width: 100%;"></div>
-        <p id="marker_info" style="font-weight: bold;"></p>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
-        <script>
-            var locations = {
-                "Titik Sungai: Situ Cisanti<br>Alamat: Neglawangi, Kertasari,<br>Bandung Regency, West Java 40386,<br>Memenuhi Baku Mutu": [-7.208484677933202, 107.65792566573455],  // Source of the Citarum River
-                "Titik Sungai: Bendungan Saguling<br>Alamat: Saguling, Batujajar,<br>West Bandung Regency, West Java,<br>Tercemar Sedang ": [-6.913526, 107.367661], // Saguling Dam
-                "Titik Sungai: Bendungan Cirata<br>Alamat: Citamiang, Maniis,<br>Purwakarta Regency, West Java 41166,<br>Tercemar Berat": [-6.700203, 107.364963], // Cirata Dam
-                "Titik Sungai: Bendungan Jatiluhur<br>Alamat: Kutamanah, Sukasari,<br>Purwakarta Regency, West Java 41116,<br>Tercemar Ringan": [-6.526997, 107.385456], // Jatiluhur Dam
-                "Titik Sungai: Kabupaten Karawang<br>Alamat: Sungai Citarum, Telukjambe Timur,<br>Karawang, West Java 41361,<br>Memenuhi Baku Mutu": [-6.298185, 107.287757],  // Karawang Regency
-                "Titik Sungai: Muara Gembong<br>Alamat: Kecamatan Muara Gembong,<br>Bekasi Regency, West Java,<br>Tercemar Ringan": [-5.984462, 107.043829], // Bekasi
-                "Titik Sungai: Sungai Cikapundung<br>Alamat: Bandung City, West Java,<br>Tercemar Berat": [-6.898969, 107.606402],  // Bandung City
-                "Titik Sungai: Dayeuhkolot<br>Alamat: Dayeuhkolot, Bandung, West Java,<br>Tercemar Sedang": [-6.990974, 107.626285]  // Dayeuhkolot
-            };
-
-            var map = L.map('map').setView([-6.8650, 107.4912], 10);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 18,
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            Object.keys(locations).forEach(function(place) {
-                var coord = locations[place];
-                var marker = L.marker(coord).addTo(map);
-                marker.bindPopup(place);
-                marker.on('click', function() {
-                    handleMarkerClick(marker, place);
-                });
-            });
-
-            function handleMarkerClick(marker, place) {
-                var info_paragraph = document.getElementById("marker_info");
-                info_paragraph.innerHTML = place;
-                var command = "place_clicked:" + place;
-                Streamlit.setComponentValue(command);
+        if st.button('Submit'):
+            features = {
+                'pH': pH,
+                'TSS': TSS,
+                'DO': DO,
+                'BOD': BOD,
+                'COD': COD,
+                'Nitrat': Nitrat,
+                'FecalColiform': FecalColiform,
+                'Fosfat': Fosfat,
+                'IP': IP
             }
-        </script>
-        """
-        st.components.v1.html(html_code, height=600)
 
-        if st.session_state.get("clicked_marker"):
-            place = st.session_state.get("clicked_marker").split(":")[1]
-            st.write(place)
+            df_manual = pd.DataFrame(features, index=[0])
+            st.write(df_manual)
+
+            fig = px.bar(
+                df_manual.melt(var_name='Parameter', value_name='Nilai'),
+                x='Parameter',
+                y='Nilai',
+                color='Parameter',
+                title='Diagram Data Kualitas Air Sungai'
+            )
+            st.plotly_chart(fig)
 
 
-    elif choice == ('Artificial Neural Network'):
-        st.subheader('Artificial Neural Network')
-
-        html_code = """
-        <div id="map" style="height: 500px; width: 100%;"></div>
-        <p id="marker_info" style="font-weight: bold;"></p>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
-        <script>
-            var locations = {
-                "Titik Sungai: Situ Cisanti<br>Alamat: Neglawangi, Kertasari,<br>Bandung Regency, West Java 40386,<br>Memenuhi Baku Mutu": [-7.208484677933202, 107.65792566573455],  // Source of the Citarum River
-                "Titik Sungai: Bendungan Saguling<br>Alamat: Saguling, Batujajar,<br>West Bandung Regency, West Java,<br>Tercemar Sedang ": [-6.913526, 107.367661], // Saguling Dam
-                "Titik Sungai: Bendungan Cirata<br>Alamat: Citamiang, Maniis,<br>Purwakarta Regency, West Java 41166,<br>Tercemar Berat": [-6.700203, 107.364963], // Cirata Dam
-                "Titik Sungai: Bendungan Jatiluhur<br>Alamat: Kutamanah, Sukasari,<br>Purwakarta Regency, West Java 41116,<br>Tercemar Ringan": [-6.526997, 107.385456], // Jatiluhur Dam
-                "Titik Sungai: Kabupaten Karawang<br>Alamat: Sungai Citarum, Telukjambe Timur,<br>Karawang, West Java 41361,<br>Memenuhi Baku Mutu": [-6.298185, 107.287757],  // Karawang Regency
-                "Titik Sungai: Muara Gembong<br>Alamat: Kecamatan Muara Gembong,<br>Bekasi Regency, West Java,<br>Tercemar Ringan": [-5.984462, 107.043829], // Bekasi
-                "Titik Sungai: Sungai Cikapundung<br>Alamat: Bandung City, West Java,<br>Tercemar Berat": [-6.898969, 107.606402],  // Bandung City
-                "Titik Sungai: Dayeuhkolot<br>Alamat: Dayeuhkolot, Bandung, West Java,<br>Tercemar Sedang": [-6.990974, 107.626285]  // Dayeuhkolot
-            };
-
-            var map = L.map('map').setView([-6.8650, 107.4912], 10);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 18,
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            Object.keys(locations).forEach(function(place) {
-                var coord = locations[place];
-                var marker = L.marker(coord).addTo(map);
-                marker.bindPopup(place);
-                marker.on('click', function() {
-                    handleMarkerClick(marker, place);
-                });
-            });
-
-            function handleMarkerClick(marker, place) {
-                var info_paragraph = document.getElementById("marker_info");
-                info_paragraph.innerHTML = place;
-                var command = "place_clicked:" + place;
-                Streamlit.setComponentValue(command);
-            }
-        </script>
-        """
-        st.components.v1.html(html_code, height=600)
-
-        if st.session_state.get("clicked_marker"):
-            place = st.session_state.get("clicked_marker").split(":")[1]
-            st.write(place)
-
-    elif choice == ('Gaussian Naive Bayes'):
-        st.subheader('Gaussian Naive Bayes')
-
-        html_code = """
-        <div id="map" style="height: 500px; width: 100%;"></div>
-        <p id="marker_info" style="font-weight: bold;"></p>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
-        <script>
-            var locations = {
-                "Titik Sungai: Situ Cisanti<br>Alamat: Neglawangi, Kertasari,<br>Bandung Regency, West Java 40386,<br>Memenuhi Baku Mutu": [-7.208484677933202, 107.65792566573455],  // Source of the Citarum River
-                "Titik Sungai: Bendungan Saguling<br>Alamat: Saguling, Batujajar,<br>West Bandung Regency, West Java,<br>Tercemar Sedang ": [-6.913526, 107.367661], // Saguling Dam
-                "Titik Sungai: Bendungan Cirata<br>Alamat: Citamiang, Maniis,<br>Purwakarta Regency, West Java 41166,<br>Tercemar Berat": [-6.700203, 107.364963], // Cirata Dam
-                "Titik Sungai: Bendungan Jatiluhur<br>Alamat: Kutamanah, Sukasari,<br>Purwakarta Regency, West Java 41116,<br>Tercemar Ringan": [-6.526997, 107.385456], // Jatiluhur Dam
-                "Titik Sungai: Kabupaten Karawang<br>Alamat: Sungai Citarum, Telukjambe Timur,<br>Karawang, West Java 41361,<br>Memenuhi Baku Mutu": [-6.298185, 107.287757],  // Karawang Regency
-                "Titik Sungai: Muara Gembong<br>Alamat: Kecamatan Muara Gembong,<br>Bekasi Regency, West Java,<br>Tercemar Ringan": [-5.984462, 107.043829], // Bekasi
-                "Titik Sungai: Sungai Cikapundung<br>Alamat: Bandung City, West Java,<br>Tercemar Berat": [-6.898969, 107.606402],  // Bandung City
-                "Titik Sungai: Dayeuhkolot<br>Alamat: Dayeuhkolot, Bandung, West Java,<br>Tercemar Sedang": [-6.990974, 107.626285]  // Dayeuhkolot
-            };
-
-            var map = L.map('map').setView([-6.8650, 107.4912], 10);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 18,
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            Object.keys(locations).forEach(function(place) {
-                var coord = locations[place];
-                var marker = L.marker(coord).addTo(map);
-                marker.bindPopup(place);
-                marker.on('click', function() {
-                    handleMarkerClick(marker, place);
-                });
-            });
-
-            function handleMarkerClick(marker, place) {
-                var info_paragraph = document.getElementById("marker_info");
-                info_paragraph.innerHTML = place;
-                var command = "place_clicked:" + place;
-                Streamlit.setComponentValue(command);
-            }
-        </script>
-        """
-        st.components.v1.html(html_code, height=600)
-
-        if st.session_state.get("clicked_marker"):
-            place = st.session_state.get("clicked_marker").split(":")[1]
-            st.write(place)
 
 app()
