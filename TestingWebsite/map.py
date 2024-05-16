@@ -4,29 +4,37 @@ def app():
     st.write('Metode')
     st.title('Titik Peta Sungai :blue[Citarum]')
 
-    # Membuat tiga kolom
-    col1, col2, col3 = st.columns(3)
-
-    # Informasi untuk setiap kotak
+    # Informasi untuk setiap kotak dengan ukuran yang diinginkan
     boxes_info = [
-        {"title": "Kotor", "color": "#FF5733"},
-        {"title": "Bersih", "color": "#33FF57"},
-        {"title": "Tidak Tersedia", "color": "#3357FF"}
+        {"title": "Memenuhi Baku Mutu", "color": "#6DC5D1", "width": "50px", "height": "50px"},
+        {"title": "Tercemar Ringan", "color": "#7ABA78", "width": "50px", "height": "50px"},
+        {"title": "Tercemar Sedang", "color": "#FDDE55", "width": "50px", "height": "50px"},
+        {"title": "Tercemar Berat", "color": "#C40C0C", "width": "50px", "height": "50px"}
     ]
 
+    # Membuat empat kolom
+    col1, col2, col3, col4 = st.columns(4)
+
     # Menampilkan setiap kotak di dalam kolom yang berbeda
-    for box in boxes_info:
-        with col1:  # Menambahkan kotak ke kolom pertama
-            st.subheader(box["title"])
-            st.markdown(f'<div style="width: 100px; height: 100px; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
+    with col1:
+        box = boxes_info[0]
+        st.write(box["title"])
+        st.markdown(f'<div style="width: {box["width"]}; height: {box["height"]}; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
 
-        with col2:  # Menambahkan kotak ke kolom kedua
-            st.subheader(box["title"])
-            st.markdown(f'<div style="width: 100px; height: 100px; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
+    with col2:
+        box = boxes_info[1]
+        st.write(box["title"])
+        st.markdown(f'<div style="width: {box["width"]}; height: {box["height"]}; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
 
-        with col3:  # Menambahkan kotak ke kolom ketiga
-            st.subheader(box["title"])
-            st.markdown(f'<div style="width: 100px; height: 100px; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
+    with col3:
+        box = boxes_info[2]
+        st.write(box["title"])
+        st.markdown(f'<div style="width: {box["width"]}; height: {box["height"]}; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
+
+    with col4:
+        box = boxes_info[3]
+        st.write(box["title"])
+        st.markdown(f'<div style="width: {box["width"]}; height: {box["height"]}; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
 
 
     choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['KNN with Euclidean Distance','Artificial Neural Network', 'Gaussian Naive Bayes'])
