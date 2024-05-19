@@ -9,14 +9,14 @@ html_code = """
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
 <script>
     var locations = {
-        "Titik Sungai: Situ Cisanti<br>Alamat: Neglawangi, Kertasari,<br>Bandung Regency, West Java 40386,<br>Memenuhi Baku Mutu": [-7.208484677933202, 107.65792566573455],
-        "Titik Sungai: Bendungan Saguling<br>Alamat: Saguling, Batujajar,<br>West Bandung Regency, West Java,<br>Tercemar Sedang ": [-6.913526, 107.367661],
-        "Titik Sungai: Bendungan Cirata<br>Alamat: Citamiang, Maniis,<br>Purwakarta Regency, West Java 41166,<br>Tercemar Berat": [-6.700203, 107.364963],
-        "Titik Sungai: Bendungan Jatiluhur<br>Alamat: Kutamanah, Sukasari,<br>Purwakarta Regency, West Java 41116,<br>Tercemar Ringan": [-6.526997, 107.385456],
-        "Titik Sungai: Kabupaten Karawang<br>Alamat: Sungai Citarum, Telukjambe Timur,<br>Karawang, West Java 41361,<br>Memenuhi Baku Mutu": [-6.298185, 107.287757],
-        "Titik Sungai: Muara Gembong<br>Alamat: Kecamatan Muara Gembong,<br>Bekasi Regency, West Java,<br>Tercemar Ringan": [-5.984462, 107.043829],
-        "Titik Sungai: Sungai Cikapundung<br>Alamat: Bandung City, West Java,<br>Tercemar Berat": [-6.898969, 107.606402],
-        "Titik Sungai: Dayeuhkolot<br>Alamat: Dayeuhkolot, Bandung, West Java,<br>Tercemar Sedang": [-6.990974, 107.626285]
+        "Titik Sungai: Situ Cisanti<br>Alamat: Neglawangi, Kertasari,<br>Bandung Regency, West Java 40386,<br>Memenuhi Baku Mutu": [-7.20848, 107.65793],
+        "Titik Sungai: Bendungan Saguling<br>Alamat: Saguling, Batujajar,<br>West Bandung Regency, West Java,<br>Tercemar Sedang": [-6.91353, 107.36766],
+        "Titik Sungai: Bendungan Cirata<br>Alamat: Citamiang, Maniis,<br>Purwakarta Regency, West Java 41166,<br>Tercemar Berat": [-6.70020, 107.36496],
+        "Titik Sungai: Bendungan Jatiluhur<br>Alamat: Kutamanah, Sukasari,<br>Purwakarta Regency, West Java 41116,<br>Tercemar Ringan": [-6.52699, 107.38545],
+        "Titik Sungai: Kabupaten Karawang<br>Alamat: Sungai Citarum, Telukjambe Timur,<br>Karawang, West Java 41361,<br>Memenuhi Baku Mutu": [-6.29818, 107.28775],
+        "Titik Sungai: Muara Gembong<br>Alamat: Kecamatan Muara Gembong,<br>Bekasi Regency, West Java,<br>Tercemar Ringan": [-5.98446, 107.04382],
+        "Titik Sungai: Sungai Cikapundung<br>Alamat: Bandung City, West Java,<br>Tercemar Berat": [-6.89896, 107.60640],
+        "Titik Sungai: Dayeuhkolot<br>Alamat: Dayeuhkolot, Bandung, West Java,<br>Tercemar Sedang": [-6.99097, 107.62628]
     };
 
     var map = L.map('map').setView([-6.8650, 107.4912], 10);
@@ -58,48 +58,48 @@ html_code = """
 
     // Koordinat lebih detail sepanjang jalur Sungai Citarum
     var citarumCoordinates = [
-        [-7.208484677933202, 107.65792566573455],  // Situ Cisanti
-        [-7.180543, 107.669803],
-        [-7.144481, 107.670036],
-        [-7.107647, 107.665094],
-        [-7.071550, 107.661217],
-        [-7.032015, 107.645695],
-        [-7.000049, 107.629878],
-        [-6.974688, 107.611886],
-        [-6.937760, 107.585220],
-        [-6.914947, 107.548237],
-        [-6.890974, 107.520882],
-        [-6.864636, 107.490248],
-        [-6.834812, 107.465924],
-        [-6.807319, 107.445586],
-        [-6.780705, 107.423447],
-        [-6.745477, 107.396274],
-        [-6.713225, 107.370923],
-        [-6.700203, 107.364963],  // Bendungan Cirata
-        [-6.674034, 107.341447],
-        [-6.656276, 107.316623],
-        [-6.636122, 107.294516],
-        [-6.616673, 107.269914],
-        [-6.598573, 107.248473],
-        [-6.570911, 107.222611],
-        [-6.551058, 107.200838],
-        [-6.526997, 107.385456],  // Bendungan Jatiluhur
-        [-6.493438, 107.165310],
-        [-6.465831, 107.137589],
-        [-6.437194, 107.115047],
-        [-6.412038, 107.089206],
-        [-6.380760, 107.059692],
-        [-6.345614, 107.034196],
-        [-6.315520, 107.006517],
-        [-6.298185, 107.287757],  // Kabupaten Karawang
-        [-6.248835, 106.975352],
-        [-6.208727, 106.957138],
-        [-6.165341, 106.933406],
-        [-6.125673, 106.913248],
-        [-6.090349, 106.892899],
-        [-6.043670, 106.872672],
-        [-6.005684, 106.848943],
-        [-5.984462, 107.043829]   // Muara Gembong
+        [-7.20848, 107.65793],  // Situ Cisanti
+        [-7.18054, 107.66980],
+        [-7.14448, 107.67003],
+        [-7.10764, 107.66509],
+        [-7.07155, 107.66121],
+        [-7.03201, 107.64569],
+        [-7.00004, 107.62987],
+        [-6.97468, 107.61188],
+        [-6.93776, 107.58522],
+        [-6.91494, 107.54823],
+        [-6.89097, 107.52088],
+        [-6.86463, 107.49024],
+        [-6.83481, 107.46592],
+        [-6.80731, 107.44558],
+        [-6.78070, 107.42344],
+        [-6.74547, 107.39627],
+        [-6.71322, 107.37092],
+        [-6.70020, 107.36496],  // Bendungan Cirata
+        [-6.67403, 107.34144],
+        [-6.65627, 107.31662],
+        [-6.63612, 107.29451],
+        [-6.61667, 107.26991],
+        [-6.59857, 107.24847],
+        [-6.57091, 107.22261],
+        [-6.55105, 107.20083],
+        [-6.52699, 107.38545],  // Bendungan Jatiluhur
+        [-6.49343, 107.16531],
+        [-6.46583, 107.13758],
+        [-6.43719, 107.11504],
+        [-6.41203, 107.08920],
+        [-6.38076, 107.05969],
+        [-6.34561, 107.03419],
+        [-6.31552, 107.00651],
+        [-6.29818, 107.28775],  // Kabupaten Karawang
+        [-6.24883, 106.97535],
+        [-6.20872, 106.95713],
+        [-6.16534, 106.93340],
+        [-6.12567, 106.91324],
+        [-6.09034, 106.89289],
+        [-6.04367, 106.87267],
+        [-6.00568, 106.84894],
+        [-5.98446, 107.04382]   // Muara Gembong
     ];
 
     // Debugging: Log koordinat ke console

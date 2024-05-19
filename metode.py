@@ -37,10 +37,10 @@ def app():
         st.markdown(f'<div style="width: {box["width"]}; height: {box["height"]}; background-color: {box["color"]};"></div>', unsafe_allow_html=True)
 
 
-    choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['KNN with Euclidean Distance','Artificial Neural Network', 'Gaussian Naive Bayes'])
+    choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN','Artificial Neural Network', 'Gaussian Naive Bayes'])
 
-    if choice == ('KNN with Euclidean Distance'):
-        st.subheader('KNN with Euclidean Distance')
+    if choice == ('Weighted KNN'):
+        st.subheader('Weighted KNN')
 
         html_code = """
         <div id="map" style="height: 500px; width: 100%;"></div>

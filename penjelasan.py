@@ -31,14 +31,14 @@ def app():
     st.subheader("Metode Machine Learning")
     st.write('Berisikan metode metode Machine Learning yang digunakan pada projek website Citasi, diantaranya terdiri dari KNN with Eucidean Distance, Artificial Neural Network, dan Gaussian Naive Bayes.')
     
-    st.subheader("1. KNN with Euclidean Distance")
+    st.subheader("1. Weighted KNN")
 
     image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/knn.png?raw=true"
     try:
         image = fetch_image_from_url(image_url)
         resized_image = image.copy()
         resized_image.thumbnail((500, 500))
-        st.image(resized_image, caption="KNN with Euclidean Distance", channels="RGB", use_column_width=True)
+        st.image(resized_image, caption="Weighted KNN", channels="RGB", use_column_width=True)
         st.write('K-Nearest Neighbor merupakan salah satu algoritma yang digunakan dalam pengklasifikasian. Prinsip kerja K-Nearest Neighbor (KNN) adalah mencari jarak terdekat antara data yang akan dievaluasi dengan K-Nearest Neighbor terdekatnya dalam data pelatihan.')
 
         st.link_button("Baca selengkapnya", "https://www.ibm.com/topics/knn")
