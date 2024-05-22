@@ -1,146 +1,116 @@
 import streamlit as st
+import pickle
+import numpy as np
 import pandas as pd
 import plotly.express as px
-import numpy as np
-from scipy.spatial import distance
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-def knn_predict(X_train, y_train, X_test, k=3):
-    # Calculate Euclidean distances
-    distances = distance.cdist(X_test, X_train, 'euclidean')
-    neighbors_idx = np.argsort(distances, axis=1)[:, :k]
-    neighbors_labels = y_train[neighbors_idx]
-    predictions = np.array([np.argmax(np.bincount(labels)) for labels in neighbors_labels])
-    return predictions
-
-def preprocess_input(df):
-    # Ensure all columns are of float type
-    df['pH'] = df['pH'].astype(float)
-    df['TSS'] = df['TSS'].astype(float)
-    df['DO'] = df['DO'].astype(float)
-    df['BOD'] = df['BOD'].astype(float)
-    df['COD'] = df['COD'].astype(float)
-    df['Nitrat'] = df['Nitrat'].astype(float)
-    df['FecalColiform'] = df['FecalColiform'].astype(float)
-    df['Fosfat'] = df['Fosfat'].astype(float)
-    
-    # Handle missing columns by adding them with default values
-    expected_columns = ['pH', 'TSS', 'DO', 'BOD', 'COD', 'Nitrat', 'FecalColiform', 'Fosfat', 'NH3N', 'TOC']
-    for col in expected_columns:
-        if col not in df.columns:
-            df[col] = 0.0
-
-    return df
-
+# Fungsi utama aplikasi
 def app():
-    st.write('Kalkulator')
-    st.title('Kalkulator')
+    st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
 
-    choice = st.selectbox('Manual atau Upload File', ['Manual', 'Upload File'])
+    choice = st.selectbox('Pilih Metode Input', ['Manual', 'Upload File'])
 
+    # Jika pilihan Upload File
     if choice == 'Upload File':
         st.subheader('Silahkan Upload File Dalam Bentuk CSV')
-        uploaded_file = st.file_uploader('Choose a CSV file', type='csv')
+        uploaded_file = st.file_uploader('Pilih file CSV', type='csv')
         if uploaded_file:
-            st.markdown('---')
-            df_uploaded = pd.read_csv(uploaded_file)
-            st.dataframe(df_uploaded)
-            groupby_column = st.selectbox(
-                'Pilih kolom untuk dianalisis',
-                ('pH', 'TSS', 'DO', 'BOD', 'COD', 'Nitrat', 'FecalColiform', 'Fosfat'),
-            )
+            df = pd.read_csv(uploaded_file)
+            st.dataframe(df)
 
-            # Plot data berdasarkan kolom yang dipilih
-            fig = px.bar(
-                df_uploaded,
-                x=groupby_column,
-                y='Class',
-                color='Class',
-                title=f'<b>Analisis Class berdasarkan {groupby_column}</b>',
-                template='plotly_white'
-            )
-            st.plotly_chart(fig)
+            model = load_model()
+            if model:
+                df['Prediction'] = model.predict(df[['pH', 'TSS', 'DO', 'BOD', 'COD', 'Nitrat', 'FecalColiform', 'Fosfat', 'IP']])
+                st.write('Hasil Prediksi:')
+                st.dataframe(df)
 
+                fig = px.pie(df, names='Prediction', title='Distribusi Klasifikasi Kualitas Air Sungai')
+                st.plotly_chart(fig)
+    
+    # Jika pilihan Manual
     elif choice == 'Manual':
-        st.subheader('Silahkan masukkan data kualitas :blue[Air Sungai] secara manual')
+        st.subheader('Silahkan masukkan data kualitas Air Sungai secara manual')
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            pH = st.number_input('Input Nilai pH', min_value=0.0, max_value=14.0, value=7.0)
-            TSS = st.number_input('Input Nilai TSS (mg/L)', min_value=0.0, value=28.0)
-            DO = st.number_input('Input Nilai DO (mg/L)', min_value=0.0, value=5.0)
-            NH3N = st.number_input('Input Nilai NH3N (mg/L)', min_value=0.0, value=0.5)
+            pH = st.text_input('Input Nilai pH', placeholder='6-8')
+            TSS = st.text_input('Input Nilai TSS', placeholder='20-36 mg/L')
+            DO = st.text_input('Input Nilai DO', placeholder='0,00-7,79 mg/L')
         with col2:
-            BOD = st.number_input('Input Nilai BOD (mg/L)', min_value=0.0, value=3.0)
-            COD = st.number_input('Input Nilai COD (mg/L)', min_value=0.0, value=20.0)
-            Nitrat = st.number_input('Input Nilai Nitrat (mg/L)', min_value=0.0, value=2.0)
-            TOC = st.number_input('Input Nilai TOC (mg/L)', min_value=0.0, value=5.0)
+            BOD = st.text_input('Input Nilai BOD', placeholder='1,7-6 mg/L')
+            COD = st.text_input('Input Nilai COD', placeholder='10-30 mg/L')
+            Nitrat = st.text_input('Input Nilai Nitrat', placeholder='0-4 mg/L')
         with col3:
-            FecalColiform = st.number_input('Input Nilai FecalColiform (jml/100L)', min_value=0.0, value=75.0)
-            Fosfat = st.number_input('Input Nilai Fosfat (mg/L)', min_value=0.0, value=0.05)
-            # Adding missing columns
-            # Oxygen Demanding Substances (ODS)
-            ODS = st.number_input('Input Nilai ODS (mg/L)', min_value=0.0, value=4.0)
-            # Total Nitrogen (TN)
-            TN = st.number_input('Input Nilai TN (mg/L)', min_value=0.0, value=2.0)
+            FecalColiform = st.text_input('Input Nilai FecalColiform', placeholder='50-100 jml/100L')
+            Fosfat = st.text_input('Input Nilai Fosfat', placeholder='0,03-0,1 mg/L')
+            IP = st.text_input('Input Nilai IP', placeholder='0')
 
         if st.button('Submit'):
-            features = {
-                'pH': pH,
-                'TSS': TSS,
-                'DO': DO,
-                'BOD': BOD,
-                'COD': COD,
-                'Nitrat': Nitrat,
-                'FecalColiform': FecalColiform,
-                'Fosfat': Fosfat,
-                'NH3N': NH3N,
-                'TOC': TOC,
-                'ODS': ODS,
-                'TN': TN,
-            }
-
-            # Convert the inputs to a DataFrame
-            df_manual = pd.DataFrame(features, index=[0])
-            st.write(df_manual)
-
-            # Preprocess the data to match the model input
-            df_manual_processed = preprocess_input(df_manual)
-
-            # Load the training data from CSV file
-            training_file = 'DatasetCitasi/DataCITASI.csv'  # Replace with actual file path
             try:
-                df_train = pd.read_csv(training_file)
-            except FileNotFoundError:
-                st.error('File training_data.csv tidak ditemukan. Pastikan file ada di direktori yang benar.')
-                return
+                input_data = np.array([[float(pH), float(TSS), float(DO), float(BOD), float(COD), float(Nitrat), float(FecalColiform), float(Fosfat), float(IP)]])
+                st.write('Input Data:', input_data)  # Output untuk verifikasi data input
 
-            # Assuming the training CSV has the same preprocessing steps
-            df_train_processed = preprocess_input(df_train)
+                model = load_model()
+                if model:
+                    waterriver_class = model.predict(input_data)
+                    st.write('Prediksi Kelas:', waterriver_class[0])  # Output hasil prediksi
 
-            # Separate features and target
-            X_train = df_train_processed.drop(columns='Class').values
-            y_train = df_train_processed['Class'].values
+                    klasifikasi_kualitas_airsungai, color = interpret_prediction(waterriver_class[0])
+                else:
+                    klasifikasi_kualitas_airsungai = 'Model tidak berhasil dimuat.'
+                    color = 'grey'
 
-            # Ensure the feature dimensions match
-            if X_train.shape[1] != df_manual_processed.shape[1]:
-                st.error(f'Jumlah fitur input ({df_manual_processed.shape[1]}) tidak sesuai dengan jumlah fitur data pelatihan ({X_train.shape[1]}).')
-                return
+            except ValueError:
+                klasifikasi_kualitas_airsungai = 'Mohon masukkan semua nilai dengan format yang benar.'
+                color = 'grey'
 
-            # Make a prediction using KNN
-            prediction = knn_predict(X_train, y_train, df_manual_processed.values, k=3)
+            st.markdown(f'<div style="background-color: {color}; padding: 10px; border-radius: 5px;"><h3 style="color: white;">{klasifikasi_kualitas_airsungai}</h3></div>', unsafe_allow_html=True)
 
-            # Display the prediction
-            st.subheader(f'Prediksi Kelas: {prediction[0]}')
+def load_model():
+    try:
+        return pickle.load(open('model_logreg.sav', 'rb'))
+    except Exception as e:
+        st.write(f'Error loading model: {e}')
+        return None
 
-            # Plot the data
-            fig = px.bar(
-                df_manual.melt(var_name='Parameter', value_name='Nilai'),
-                x='Parameter',
-                y='Nilai',
-                color='Parameter',
-                title='Diagram Data Kualitas Air Sungai'
-            )
-            st.plotly_chart
-            st.plotly_chart(fig)
+def interpret_prediction(prediction):
+    if prediction == 1:
+        return 'Air Sungai Citarum Tidak Tercemar', 'blue'
+    elif prediction == 2:
+        return 'Air Sungai Citarum Tercemar Ringan', 'yellow'
+    elif prediction == 3:
+        return 'Air Sungai Citarum Tercemar Sedang', 'orange'
+    elif prediction == 4:
+        return 'Air Sungai Citarum Tercemar Berat', 'red'
+    else:
+        return 'Kelas tidak dikenal', 'grey'
 
-app()
+# Evaluasi Model dengan Data Uji
+def evaluate_model():
+    st.subheader('Evaluasi Model dengan Data Uji')
+    data_uji = pd.read_csv('data_uji.csv')  # Ganti dengan path yang benar
+
+    X_test = data_uji[['pH', 'TSS', 'DO', 'BOD', 'COD', 'Nitrat', 'FecalColiform', 'Fosfat', 'IP']].values
+    y_test = data_uji['Class']  # Ganti dengan nama kolom label yang sesuai
+
+    model = load_model()
+    if model:
+        y_pred = model.predict(X_test)
+
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, average='weighted')
+        recall = recall_score(y_test, y_pred, average='weighted')
+        f1 = f1_score(y_test, y_pred, average='weighted')
+
+        st.write(f'Akurasi: {accuracy}')
+        st.write(f'Presisi: {precision}')
+        st.write(f'Recall: {recall}')
+        st.write(f'F1 Score: {f1}')
+    else:
+        st.write('Model tidak berhasil dimuat.')
+
+# Panggil fungsi utama
+if __name__ == '__main__':
+    app()
+    evaluate_model()
