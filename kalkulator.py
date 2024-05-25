@@ -3,10 +3,16 @@ import pickle
 import numpy as np
 import pandas as pd
 import plotly.express as px
+from sklearn.linear_model import LogisticRegression
 
 # Load the pre-trained model
 model_path = 'model_logreg.sav'
-kualitas_air_sungai_logreg = pickle.load(open(model_path, 'rb'))
+try:
+    kualitas_air_sungai_logreg = pickle.load(open(model_path, 'rb'))
+except FileNotFoundError:
+    st.error('Model file not found. Please ensure that model_logreg.sav is in the correct directory.')
+except ModuleNotFoundError as e:
+    st.error(f'Module not found: {e}. Please install the required modules.')
 
 def app():
     st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
@@ -20,20 +26,55 @@ def app():
             df = pd.read_csv(uploaded_file)
             st.dataframe(df)
 
-            groupby_column = st.selectbox(
-                'Pilih kolom untuk dianalisis',
-                df.columns.tolist(),  # Automatically list all columns
-            )
+            required_columns = ['pH', 'TSS', 'DO', 'BOD', 'COD', 'Nitrat', 'FecalColiform', 'Fosfat', 'IP']
+            if all(column in df.columns for column in required_columns):
+                # Prepare the data for prediction
+                input_data = df[required_columns]
+                
+                try:
+                    # Convert the input data to the correct format
+                    input_data = input_data.astype(float).to_numpy()
+                    
+                    # Predict using the model
+                    predictions = kualitas_air_sungai_logreg.predict(input_data)
+                    
+                    # Map the predictions to their respective classes
+                    prediction_labels = []
+                    for pred in predictions:
+                        if pred == 1:
+                            prediction_labels.append('Air Sungai Citarum Tidak Tercemar')
+                        elif pred == 2:
+                            prediction_labels.append('Air Sungai Citarum Tercemar Ringan')
+                        elif pred == 3:
+                            prediction_labels.append('Air Sungai Citarum Tercemar Sedang')
+                        elif pred == 4:
+                            prediction_labels.append('Air Sungai Citarum Tercemar Berat')
+                        else:
+                            prediction_labels.append('Kelas tidak dikenal')
 
-            fig = px.bar(
-                df,
-                x=groupby_column,
-                y='Class',
-                color='Class',
-                title=f'<b>Analisis Class berdasarkan {groupby_column}</b>',
-                template='plotly_white'
-            )
-            st.plotly_chart(fig)
+                    # Add predictions to the dataframe
+                    df['Klasifikasi'] = prediction_labels
+                    
+                    st.dataframe(df)
+
+                    # Count the number of occurrences of each class
+                    class_counts = df['Klasifikasi'].value_counts().reset_index()
+                    class_counts.columns = ['Klasifikasi', 'Jumlah']
+
+                    # Plotting the classification results
+                    fig = px.pie(
+                        class_counts,
+                        names='Klasifikasi',
+                        values='Jumlah',
+                        title='<b>Hasil Klasifikasi Kualitas Air Sungai</b>',
+                        template='plotly_white'
+                    )
+                    st.plotly_chart(fig)
+                    
+                except ValueError:
+                    st.error('Ada kesalahan dalam format data input. Pastikan semua kolom berisi nilai numerik.')
+            else:
+                st.error('File CSV tidak memiliki kolom yang diperlukan untuk prediksi.')
 
     elif choice == 'Manual':
         st.subheader('Silahkan masukkan data kualitas Air Sungai secara manual')
@@ -55,67 +96,71 @@ def app():
             IP = st.text_input('Indeks Pencemaran (IP):', help="Indeks Pencemaran (IP) adalah ukuran polusi pada sungai.", placeholder="Masukkan nilai IP...")
 
         if st.button('Submit'):
-            try:
-                input_data = np.array([[float(pH), float(TSS), float(DO), float(BOD), float(COD), float(Nitrat), float(FecalColiform), float(Fosfat), float(IP)]])
-                
-                st.write('Input Data:', input_data)
-                
-                if not np.isnan(input_data).any() and not np.isinf(input_data).any():
-                    waterriver_class = kualitas_air_sungai_logreg.predict(input_data)
+            # Check if any of the inputs are empty
+            if not all([pH, TSS, DO, BOD, COD, Nitrat, FecalColiform, Fosfat, IP]):
+                st.error('Mohon masukkan semua nilai dengan format yang benar.')
+            else:
+                try:
+                    input_data = np.array([[float(pH), float(TSS), float(DO), float(BOD), float(COD), float(Nitrat), float(FecalColiform), float(Fosfat), float(IP)]])
                     
-                    st.write('Prediksi Kelas:', waterriver_class[0])
+                    st.write('Input Data:', input_data)
+                    
+                    if not np.isnan(input_data).any() and not np.isinf(input_data).any():
+                        waterriver_class = kualitas_air_sungai_logreg.predict(input_data)
+                        
+                        st.write('Prediksi Kelas:', waterriver_class[0])
 
-                    if waterriver_class[0] == 1:
-                        klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Memenuhi Baku Mutu'
-                        color = 'blue'
-                    elif waterriver_class[0] == 2:
-                        klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tercemar Ringan'
-                        color = 'yellow'
-                    elif waterriver_class[0] == 3:
-                        klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tercemar Sedang'
-                        color = 'orange'
-                    elif waterriver_class[0] == 4:
-                        klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tercemar Berat'
-                        color = 'red'
+                        if waterriver_class[0] == 1:
+                            klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tidak Tercemar'
+                            color = 'blue'
+                        elif waterriver_class[0] == 2:
+                            klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tercemar Ringan'
+                            color = 'yellow'
+                        elif waterriver_class[0] == 3:
+                            klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tercemar Sedang'
+                            color = 'orange'
+                        elif waterriver_class[0] == 4:
+                            klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tercemar Berat'
+                            color = 'red'
+                        else:
+                            klasifikasi_kualitas_airsungai = 'Kelas tidak dikenal'
+                            color = 'grey'
                     else:
-                        klasifikasi_kualitas_airsungai = 'Kelas tidak dikenal'
+                        klasifikasi_kualitas_airsungai = 'Input data contains NaN or infinity values.'
                         color = 'grey'
-                else:
-                    klasifikasi_kualitas_airsungai = 'Input data contains NaN or infinity values.'
+                except ValueError:
+                    klasifikasi_kualitas_airsungai = 'Mohon masukkan semua nilai dengan format yang benar.'
                     color = 'grey'
+
+                st.markdown(f'<div style="background-color: {color}; padding: 10px; border-radius: 5px;"><h3 style="color: white;">{klasifikasi_kualitas_airsungai}</h3></div>', unsafe_allow_html=True)
+            
+            # Display the manual data in a dataframe and plot it
+            try:
+                features = {
+                    'pH': float(pH),
+                    'TSS': float(TSS),
+                    'DO': float(DO),
+                    'BOD': float(BOD),
+                    'COD': float(COD),
+                    'Nitrat': float(Nitrat),
+                    'FecalColiform': float(FecalColiform),
+                    'Fosfat': float(Fosfat),
+                    'IP': float(IP)
+                }
+
+                df_manual = pd.DataFrame(features, index=[0])
+                st.write(df_manual)
+
+                df_melted = df_manual.melt(var_name='Parameter', value_name='Nilai')
+
+                fig = px.pie(
+                    df_melted,
+                    names='Parameter',
+                    values='Nilai',
+                    title='Diagram Data Kualitas Air Sungai'
+                )
+                st.plotly_chart(fig)
             except ValueError:
-                klasifikasi_kualitas_airsungai = 'Mohon masukkan semua nilai dengan format yang benar.'
-                color = 'grey'
+                st.error('Ada kesalahan dalam format data input. Pastikan semua kolom berisi nilai numerik.')
 
-            st.markdown(f'<div style="background-color: {color}; padding: 10px; border-radius: 5px;"><h3 style="color: white;">{klasifikasi_kualitas_airsungai}</h3></div>', unsafe_allow_html=True)
-        
-        # Display the manual data in a dataframe and plot it
-        features = {
-            'pH': pH,
-            'TSS': TSS,
-            'DO': DO,
-            'BOD': BOD,
-            'COD': COD,
-            'Nitrat': Nitrat,
-            'FecalColiform': FecalColiform,
-            'Fosfat': Fosfat,
-            'IP': IP
-        }
-
-        df_manual = pd.DataFrame(features, index=[0])
-        st.write(df_manual)
-
-        df_melted = df_manual.melt(var_name='Parameter', value_name='Nilai')
-        df_melted['Nilai'] = df_melted['Nilai'].astype(str)
-
-        fig = px.bar(
-            df_melted,
-            x='Parameter',
-            y='Nilai',
-            color='Parameter',
-            title='Diagram Data Kualitas Air Sungai'
-        )
-        st.plotly_chart(fig)
-
-if __name__ == '__main__':
-    app()
+app()
