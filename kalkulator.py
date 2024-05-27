@@ -4,14 +4,8 @@ import joblib
 import base64  # Impor modul base64 untuk encoding file CSV
 import plotly.express as px  # Impor Plotly untuk visualisasi
 
-# Load model dan scaler
-model_path = 'model_knn_euclidean.pkl'
-scaler_path = 'scaler_knn_euclidean.pkl'
-model = joblib.load(model_path)
-scaler = joblib.load(scaler_path)
-
 # Fungsi untuk klasifikasi
-def predict_quality(BOD, COD, FecalColiform, IP):
+def predict_quality(model, scaler, BOD, COD, FecalColiform, IP):
     input_data = pd.DataFrame([[BOD, COD, FecalColiform, IP]], columns=['BOD', 'COD', 'FecalColiform', 'IP'])
     input_data = scaler.transform(input_data)
     prediction = model.predict(input_data)[0]
@@ -34,6 +28,23 @@ def predict_quality(BOD, COD, FecalColiform, IP):
 
 # Judul aplikasi
 st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
+
+# Pilihan metode machine learning
+ml_choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN','Artificial Neural Network', 'Gaussian Naive Bayes'])
+
+# Load model dan scaler sesuai pilihan
+if ml_choice == 'Weighted KNN':
+    model_path = 'model_knn_euclidean.pkl'
+    scaler_path = 'scaler_knn_euclidean.pkl'
+elif ml_choice == 'Artificial Neural Network':
+    model_path = 'model_ann.pkl'
+    scaler_path = 'scaler_ann.pkl'
+elif ml_choice == 'Gaussian Naive Bayes':
+    model_path = 'model_gnb.pkl'
+    scaler_path = 'scaler_gnb.pkl'
+
+model = joblib.load(model_path)
+scaler = joblib.load(scaler_path)
 
 # Pilihan metode input data
 choice = st.selectbox('Pilih metode input data', ['Manual', 'Upload File'])
@@ -98,9 +109,9 @@ if choice == 'Manual':
                 if any(val < 0 for val in [pH, TSS, DO, BOD, COD, Nitrat, FecalColiform, Fosfat, IP]):
                     st.write("OH NO! Maaf tidak boleh ada nilai negatif. Mohon Pastikan semua nilai sudah benar.")
                 else:
-                    prediction, result, color = predict_quality(BOD, COD, FecalColiform, IP)
+                    prediction, result, color = predict_quality(model, scaler, BOD, COD, FecalColiform, IP)
                     st.markdown(f'<div style="background-color:{color};padding:10px;border-radius:5px;">{result}</div>', unsafe_allow_html=True)
-                    st.write("MANTAB!!! Model KNN dengan Euclidean Distance telah mencapai akurasi sebesar 95%")
+                    st.write("MANTAB!!! Model KNN dengan Euclidean Distance telah mencapai akurasi sebesar 95%.")
             except ValueError as e:
                 st.write(f"OOOPS! Mohon Pastikan semua nilai sudah dimasukkan dengan benar dan dalam format numerik.")
                 st.write("Tidak boleh ada kolom yang kosong yes!")
@@ -133,8 +144,8 @@ elif choice == 'Upload File':
         # Memastikan fitur yang dibutuhkan ada dalam dataset
         required_features = ['BOD', 'COD', 'FecalColiform', 'IP']
         if all(feature in df.columns for feature in required_features):
-            # Menambahkan kolom prediksi
-            df['Kualitas Air'] = df.apply(lambda row: predict_quality(row['BOD'], row['COD'], row['FecalColiform'], row['IP']), axis=1)
+                    # Menambahkan kolom prediksi
+            df['Kualitas Air'] = df.apply(lambda row: predict_quality(model, scaler, row['BOD'], row['COD'], row['FecalColiform'], row['IP'])[1], axis=1)
             
             # Menampilkan dataset dengan kolom prediksi
             st.write("Hasil klasifikasi:")
@@ -148,7 +159,6 @@ elif choice == 'Upload File':
             fig = px.pie(
                 class_counts,
                 names='Kualitas Air',
-               
                 values='Jumlah',
                 title='<b>Hasil Klasifikasi Kualitas Air Sungai</b>',
                 template='plotly_white'
@@ -162,3 +172,5 @@ elif choice == 'Upload File':
             st.markdown(href, unsafe_allow_html=True)
         else:
             st.error("Dataset tidak memiliki semua fitur yang dibutuhkan. Pastikan kolom BOD, COD, FecalColiform, dan IP ada dalam dataset.")
+
+
