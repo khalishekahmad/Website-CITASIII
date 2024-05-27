@@ -30,7 +30,7 @@ def predict_quality(model, scaler, BOD, COD, FecalColiform, IP):
 st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
 
 # Pilihan metode machine learning
-ml_choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN','Artificial Neural Network', 'Gaussian Naive Bayes'])
+ml_choice = st.selectbox('Silakan pilih model Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN','Artificial Neural Network', 'Gaussian Naive Bayes'])
 
 # Load model dan scaler sesuai pilihan
 if ml_choice == 'Weighted KNN':
@@ -172,5 +172,7 @@ elif choice == 'Upload File':
             st.markdown(href, unsafe_allow_html=True)
         else:
             st.error("Dataset tidak memiliki semua fitur yang dibutuhkan. Pastikan kolom BOD, COD, FecalColiform, dan IP ada dalam dataset.")
+
+
 
 
