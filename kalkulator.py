@@ -29,8 +29,8 @@ def app():
     # Judul aplikasi
     st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
 
-    # Pilihan metode machine learning
-    ml_choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN','Artificial Neural Network', 'Gaussian Naive Bayes'])
+# Pilihan metode machine learning
+ml_choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN','Artificial Neural Network', 'Gaussian Naive Bayes'])
 
     # Load model dan scaler sesuai pilihan
     if ml_choice == 'Weighted KNN':
@@ -165,12 +165,12 @@ def app():
                 )
                 st.plotly_chart(fig)
             
-                # Menyediakan opsi untuk mengunduh hasil klasifikasi
-                csv = df.to_csv(index=False)
-                b64 = base64.b64encode(csv.encode()).decode()  # B64 encode
-                href = f'<a href="data:file/csv;base64,{b64}" download="hasil_klasifikasi.csv">Unduh hasil klasifikasi</a>'
-                st.markdown(href, unsafe_allow_html=True)
-            else:
-                st.error("Dataset tidak memiliki semua fitur yang dibutuhkan. Pastikan kolom BOD, COD, FecalColiform, dan IP ada dalam dataset.")
-app()
+            # Menyediakan opsi untuk mengunduh hasil klasifikasi
+            csv = df.to_csv(index=False)
+            b64 = base64.b64encode(csv.encode()).decode()  # B64 encode
+            href = f'<a href="data:file/csv;base64,{b64}" download="hasil_klasifikasi.csv">Unduh hasil klasifikasi</a>'
+            st.markdown(href, unsafe_allow_html=True)
+        else:
+            st.error("Dataset tidak memiliki semua fitur yang dibutuhkan. Pastikan kolom BOD, COD, FecalColiform, dan IP ada dalam dataset.")
+
 
