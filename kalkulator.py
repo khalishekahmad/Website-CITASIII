@@ -1,166 +1,103 @@
 import streamlit as st
-import pickle
-import numpy as np
-import pandas as pd
-import plotly.express as px
-from sklearn.linear_model import LogisticRegression
+import joblib
 
-# Load the pre-trained model
-model_path = 'model_logreg.sav'
-try:
-    kualitas_air_sungai_logreg = pickle.load(open(model_path, 'rb'))
-except FileNotFoundError:
-    st.error('Model file not found. Please ensure that model_logreg.sav is in the correct directory.')
-except ModuleNotFoundError as e:
-    st.error(f'Module not found: {e}. Please install the required modules.')
+# Load model dan scaler
+model_path = 'model_knn_euclidean.pkl'
+scaler_path = 'scaler_euclidean.pkl'
+model = joblib.load(model_path)
+scaler = joblib.load(scaler_path)
 
-def app():
-    st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
+# Fungsi untuk klasifikasi
+def predict_quality(BOD, COD, FecalColiform, IP):
+    input_data = scaler.transform([[BOD, COD, FecalColiform, IP]])
+    prediction = model.predict(input_data)[0]
+    
+    class_labels = {
+        1: "Tidak tercemar/memenuhi baku mutu",
+        2: "Tercemar ringan",
+        3: "Tercemar sedang",
+        4: "Tercemar berat"
+    }
+    
+    return f"Kualitas Air Sungai Citarum: {class_labels.get(prediction, 'kelas tidak dikenal')} (Kelas {prediction})"
 
-    choice = st.selectbox('Pilih metode input data', ['Manual', 'Upload File'])
+# Judul aplikasi
+st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
 
-    if choice == 'Upload File':
-        st.subheader('Silahkan Upload File Dalam Bentuk CSV')
-        uploaded_file = st.file_uploader('Pilih file CSV', type='csv')
-        if uploaded_file:
-            df = pd.read_csv(uploaded_file)
-            st.dataframe(df)
+# Inisialisasi state untuk input
+if 'pH' not in st.session_state:
+    st.session_state.pH = ""
+if 'TSS' not in st.session_state:
+    st.session_state.TSS = ""
+if 'DO' not in st.session_state:
+    st.session_state.DO = ""
+if 'BOD' not in st.session_state:
+    st.session_state.BOD = ""
+if 'COD' not in st.session_state:
+    st.session_state.COD = ""
+if 'Nitrat' not in st.session_state:
+    st.session_state.Nitrat = ""
+if 'FecalColiform' not in st.session_state:
+    st.session_state.FecalColiform = ""
+if 'Fosfat' not in st.session_state:
+    st.session_state.Fosfat = ""
+if 'IP' not in st.session_state:
+    st.session_state.IP = ""
 
-            required_columns = ['pH', 'TSS', 'DO', 'BOD', 'COD', 'Nitrat', 'FecalColiform', 'Fosfat', 'IP']
-            if all(column in df.columns for column in required_columns):
-                # Prepare the data for prediction
-                input_data = df[required_columns]
-                
-                try:
-                    # Convert the input data to the correct format
-                    input_data = input_data.astype(float).to_numpy()
-                    
-                    # Predict using the model
-                    predictions = kualitas_air_sungai_logreg.predict(input_data)
-                    
-                    # Map the predictions to their respective classes
-                    prediction_labels = []
-                    for pred in predictions:
-                        if pred == 1:
-                            prediction_labels.append('Air Sungai Citarum Tidak Tercemar')
-                        elif pred == 2:
-                            prediction_labels.append('Air Sungai Citarum Tercemar Ringan')
-                        elif pred == 3:
-                            prediction_labels.append('Air Sungai Citarum Tercemar Sedang')
-                        elif pred == 4:
-                            prediction_labels.append('Air Sungai Citarum Tercemar Berat')
-                        else:
-                            prediction_labels.append('Kelas tidak dikenal')
+# Input parameter dari user dalam tiga kolom
+col1, col2, col3 = st.columns(3)
 
-                    # Add predictions to the dataframe
-                    df['Klasifikasi'] = prediction_labels
-                    
-                    st.dataframe(df)
+with col1:
+    st.session_state.pH = st.text_input('Potential of Hydrogen (pH):', value=st.session_state.pH, help="pH (Potential of Hydrogen) adalah ukuran keasaman yang digunakan untuk menyatakan tingkat keasaman atau kebasahan yang dimiliki oleh suatu larutan.", placeholder="6 - 8")
+    st.session_state.TSS = st.text_input('Total Suspended Solids (TSS):', value=st.session_state.TSS, help="Total Suspended Solids (TSS) adalah ukuran partikel tergantung dalam air, dalam miligram per liter (mg/L).", placeholder="20 - 36 mg/L")
+    st.session_state.DO = st.text_input('Dissolved Oxygen (DO):', value=st.session_state.DO, help="Dissolved Oxygen (DO) adalah ukuran oksigen yang terlarut dalam air, dalam miligram per liter (mg/L).", placeholder="0.00 - 7.79 mg/L")
 
-                    # Count the number of occurrences of each class
-                    class_counts = df['Klasifikasi'].value_counts().reset_index()
-                    class_counts.columns = ['Klasifikasi', 'Jumlah']
+with col2:
+    st.session_state.BOD = st.text_input('Biochemical Oxygen Demand:', value=st.session_state.BOD, help="Biochemical Oxygen Demand (BOD) adalah jumlah oksigen terlarut yang dibutuhkan oleh organisme biologis aerobik untuk memecah bahan organik yang ada dalam sampel air tertentu pada suhu tertentu selama periode waktu tertentu, dalam miligram per liter (mg/L).", placeholder="1.7 - 6 mg/L")
+    st.session_state.COD = st.text_input('Chemical Oxygen Demand (COD):', value=st.session_state.COD, help="Chemical Oxygen Demand (COD) adalah ukuran kapasitas air untuk mengkonsumsi oksigen selama dekomposisi bahan organik dan oksidasi bahan kimia anorganik seperti amonia dan nitrit, dalam miligram per liter (mg/L).", placeholder="10 - 30 mg/L")
+    st.session_state.Nitrat = st.text_input('Nitrat:', value=st.session_state.Nitrat, help="Nitrate (NO3) adalah ukuran konsentrasi nitrat dalam air, dalam miligram per liter (mg/L).", placeholder="0 - 4 mg/L")
 
-                    # Plotting the classification results
-                    fig = px.pie(
-                        class_counts,
-                        names='Klasifikasi',
-                        values='Jumlah',
-                        title='<b>Hasil Klasifikasi Kualitas Air Sungai</b>',
-                        template='plotly_white'
-                    )
-                    st.plotly_chart(fig)
-                    
-                except ValueError:
-                    st.error('Ada kesalahan dalam format data input. Pastikan semua kolom berisi nilai numerik.')
+with col3:
+    st.session_state.FecalColiform = st.text_input('Fecal Coliform:', value=st.session_state.FecalColiform, help="Fecal Coliform adalah sekelompok bakteri yang ditemukan di usus hewan berdarah panas dan digunakan sebagai indikator kontaminasi feses dalam air, dalam jumlah koloni per 100 mililiter (cfu/100 mL).", placeholder="50 - 100 jml/100L")
+    st.session_state.Fosfat = st.text_input('Fosfat:', value=st.session_state.Fosfat, help="Phosphate (PO4) adalah ukuran konsentrasi fosfat dalam air, dalam miligram per liter (mg/L).", placeholder="0.03 - 0.1 mg/L")
+    st.session_state.IP = st.text_input('Indeks Pencemaran (IP):', value=st.session_state.IP, help="Indeks Pencemaran (IP) adalah ukuran polusi pada sungai.", placeholder="Masukkan nilai IP...")
+
+# Tombol untuk klasifikasi dan reset
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button('Klasifikasi'):
+        try:
+            # Konversi input menjadi float
+            pH = float(st.session_state.pH)
+            TSS = float(st.session_state.TSS)
+            DO = float(st.session_state.DO)
+            BOD = float(st.session_state.BOD)
+            COD = float(st.session_state.COD)
+            Nitrat = float(st.session_state.Nitrat)
+            FecalColiform = float(st.session_state.FecalColiform)
+            Fosfat = float(st.session_state.Fosfat)
+            IP = float(st.session_state.IP)
+
+            # Pengecekan nilai negatif
+            if any(val < 0 for val in [pH, TSS, DO, BOD, COD, Nitrat, FecalColiform, Fosfat, IP]):
+                st.write("Tidak boleh ada nilai negatif. Pastikan semua nilai sudah benar.")
             else:
-                st.error('File CSV tidak memiliki kolom yang diperlukan untuk prediksi.')
+                result = predict_quality(BOD, COD, FecalColiform, IP)
+                st.write(result)
+                st.write("Hasil akurasi model KNN dengan Euclidean Distance adalah 95%")
+        except ValueError:
+            st.write("Pastikan semua nilai sudah dimasukkan dengan benar dan dalam format numerik.")
+            st.write("Tidak boleh ada kolom yang kosong!")
 
-    elif choice == 'Manual':
-        st.subheader('Silahkan masukkan data kualitas Air Sungai secara manual')
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            pH = st.text_input('Potential of Hydrogen (pH):', help="pH (Potential of Hydrogen) adalah ukuran keasaman yang digunakan untuk menyatakan tingkat keasaman atau kebasahan yang dimiliki oleh suatu larutan.", placeholder="6 - 8")
-            TSS = st.text_input('Total Suspended Solids (TSS):', help="Total Suspended Solids (TSS) adalah ukuran partikel tergantung dalam air, dalam miligram per liter (mg/L).", placeholder="20 - 36 mg/L")
-            DO = st.text_input('Dissolved Oxygen (DO):', help="Dissolved Oxygen (DO) adalah ukuran oksigen yang terlarut dalam air, dalam miligram per liter (mg/L).", placeholder="0.00 - 7.79 mg/L")
-
-        with col2:
-            BOD = st.text_input('Biochemical Oxygen Demand (BOD):', help="Biochemical Oxygen Demand (BOD) adalah jumlah oksigen terlarut yang dibutuhkan oleh organisme biologis aerobik untuk memecah bahan organik yang ada dalam sampel air tertentu pada suhu tertentu selama periode waktu tertentu, dalam miligram per liter (mg/L).", placeholder="1.7 - 6 mg/L")
-            COD = st.text_input('Chemical Oxygen Demand (COD):', help="Chemical Oxygen Demand (COD) adalah ukuran kapasitas air untuk mengkonsumsi oksigen selama dekomposisi bahan organik dan oksidasi bahan kimia anorganik seperti amonia dan nitrit, dalam miligram per liter (mg/L).", placeholder="10 - 30 mg/L")
-            Nitrat = st.text_input('Nitrat:', help="Nitrate (NO3) adalah ukuran konsentrasi nitrat dalam air, dalam miligram per liter (mg/L).", placeholder="0 - 4 mg/L")
-
-        with col3:
-            FecalColiform = st.text_input('Fecal Coliform:', help="Fecal Coliform adalah sekelompok bakteri yang ditemukan di usus hewan berdarah panas dan digunakan sebagai indikator kontaminasi feses dalam air, dalam jumlah koloni per 100 mililiter (cfu/100 mL).", placeholder="50 - 100 jml/100L")
-            Fosfat = st.text_input('Fosfat:', help="Phosphate (PO4) adalah ukuran konsentrasi fosfat dalam air, dalam miligram per liter (mg/L).", placeholder="0.03 - 0.1 mg/L")
-            IP = st.text_input('Indeks Pencemaran (IP):', help="Indeks Pencemaran (IP) adalah ukuran polusi pada sungai.", placeholder="Masukkan nilai IP...")
-
-        if st.button('Submit'):
-            # Check if any of the inputs are empty
-            if not all([pH, TSS, DO, BOD, COD, Nitrat, FecalColiform, Fosfat, IP]):
-                st.error('Mohon masukkan semua nilai dengan format yang benar.')
-            else:
-                try:
-                    input_data = np.array([[float(pH), float(TSS), float(DO), float(BOD), float(COD), float(Nitrat), float(FecalColiform), float(Fosfat), float(IP)]])
-                    
-                    st.write('Input Data:', input_data)
-                    
-                    if not np.isnan(input_data).any() and not np.isinf(input_data).any():
-                        waterriver_class = kualitas_air_sungai_logreg.predict(input_data)
-                        
-                        st.write('Prediksi Kelas:', waterriver_class[0])
-
-                        if waterriver_class[0] == 1:
-                            klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tidak Tercemar'
-                            color = 'blue'
-                        elif waterriver_class[0] == 2:
-                            klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tercemar Ringan'
-                            color = 'yellow'
-                        elif waterriver_class[0] == 3:
-                            klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tercemar Sedang'
-                            color = 'orange'
-                        elif waterriver_class[0] == 4:
-                            klasifikasi_kualitas_airsungai = 'Air Sungai Citarum Tercemar Berat'
-                            color = 'red'
-                        else:
-                            klasifikasi_kualitas_airsungai = 'Kelas tidak dikenal'
-                            color = 'grey'
-                    else:
-                        klasifikasi_kualitas_airsungai = 'Input data contains NaN or infinity values.'
-                        color = 'grey'
-                except ValueError:
-                    klasifikasi_kualitas_airsungai = 'Mohon masukkan semua nilai dengan format yang benar.'
-                    color = 'grey'
-
-                st.markdown(f'<div style="background-color: {color}; padding: 10px; border-radius: 5px;"><h3 style="color: white;">{klasifikasi_kualitas_airsungai}</h3></div>', unsafe_allow_html=True)
-            
-            # Display the manual data in a dataframe and plot it
-            try:
-                features = {
-                    'pH': float(pH),
-                    'TSS': float(TSS),
-                    'DO': float(DO),
-                    'BOD': float(BOD),
-                    'COD': float(COD),
-                    'Nitrat': float(Nitrat),
-                    'FecalColiform': float(FecalColiform),
-                    'Fosfat': float(Fosfat),
-                    'IP': float(IP)
-                }
-
-                df_manual = pd.DataFrame(features, index=[0])
-                st.write(df_manual)
-
-                df_melted = df_manual.melt(var_name='Parameter', value_name='Nilai')
-
-                fig = px.pie(
-                    df_melted,
-                    names='Parameter',
-                    values='Nilai',
-                    title='Diagram Data Kualitas Air Sungai'
-                )
-                st.plotly_chart(fig)
-            except ValueError:
-                st.error('Ada kesalahan dalam format data input. Pastikan semua kolom berisi nilai numerik.')
-
-app()
+with col2:
+    if st.button('Reset'):
+        st.session_state.pH = ""
+        st.session_state.TSS = ""
+        st.session_state.DO = ""
+        st.session_state.BOD = ""
+        st.session_state.COD = ""
+        st.session_state.Nitrat = ""
+        st.session_state.FecalColiform = ""
+        st.session_state.Fosfat = ""
+        st.session_state.IP = ""
