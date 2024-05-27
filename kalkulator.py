@@ -29,8 +29,8 @@ def app():
     # Judul aplikasi
     st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
 
-# Pilihan metode machine learning
-ml_choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN','Artificial Neural Network', 'Gaussian Naive Bayes'])
+    # Pilihan metode machine learning
+    ml_choice = st.selectbox('Silahakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN','Artificial Neural Network', 'Gaussian Naive Bayes'])
 
     # Load model dan scaler sesuai pilihan
     if ml_choice == 'Weighted KNN':
