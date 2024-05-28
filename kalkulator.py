@@ -37,13 +37,15 @@ ml_choice = st.selectbox('Silahkan pilih metode Machine Learning untuk melihat h
 if ml_choice == 'Weighted KNN':
     model_path = 'model_knn_euclidean.pkl'
     scaler_path = 'scaler_knn_euclidean.pkl'
-    evaluation_image = 'https://github.com/khalishekahmad/test1/blob/a5e1b0d945dbbc06029b6d090f6a5efd2da187d1/Overall%20Classification%20Report%20Metrics%20-%20KNN%20With%20Euclidean%20Distance.png?raw=true'  # Path to the evaluation image for KNN
+    evaluation_image = 'https://github.com/khalishekahmad/test1/blob/b675d67174108d7957c1832c623639832d1fdd20/Overall%20Classification%20Report%20Metrics%20-%20KNN%20with%20Euclidean%20Distance%20and%20SMOTE-ADASYN.png?raw=true'  # Path to the evaluation image for KNN
 elif ml_choice == 'Artificial Neural Network':
     model_path = 'model_ann.pkl'
     scaler_path = 'scaler_ann.pkl'
+    evaluation_image = 'https://path/to/your/ann_evaluation_image.png'  # Ganti dengan path ke gambar evaluasi ANN
 elif ml_choice == 'Gaussian Naive Bayes':
     model_path = 'model_gnb.pkl'
     scaler_path = 'scaler_gnb.pkl'
+    evaluation_image = 'https://github.com/khalishekahmad/test1/blob/3bea91c10bc45ae2e417b5f7617a5fd475783be9/Overall%20Classification%20Report%20Metrics%20-%20Gaussian%20Naive%20Bayes%20and%20SMOTE-ADASYN.png?raw=true'  # Ganti dengan path ke gambar evaluasi GNB
 
 model = joblib.load(model_path)
 scaler = joblib.load(scaler_path)
@@ -113,10 +115,29 @@ if choice == 'Manual':
                 else:
                     prediction, result, color = predict_quality(model, scaler, BOD, COD, FecalColiform, IP)
                     st.markdown(f'<div style="background-color:{color};padding:10px;border-radius:5px;">{result}</div>', unsafe_allow_html=True)
-                    st.write("Hasil akurasi model KNN dengan Euclidean Distance adalah 95%")
+
                     if ml_choice == 'Weighted KNN':
                         st.image(evaluation_image, caption='Grafik hasil evaluasi model KNN with Euclidean Distance')
-                        st.write("Gambar ini menunjukkan metrik evaluasi keseluruhan dari model KNN dengan Euclidean Distance. Semua metrik menunjukkan nilai 95%, yang berarti model memiliki akurasi, presisi, recall, dan skor F1 yang tinggi.")
+                        st.write("Gambar di atas menunjukkan hasil metrik untuk klasifikasi kualitas air Sungai Citarum yaitu model KNN yang menggunakan Euclidean Distance dan teknik oversampling SMOTE-ADASYN. Grafik kiri memecah metrik precision, recall, dan f1-score untuk masing-masing dari empat kelas yang dievaluasi.")
+                        st.write("- Precision: Metrik ini mengukur ketepatan prediksi positif model. Nilai precision untuk kelas 1, 2, 3, dan 4 masing-masing adalah 98%, 95%, 90%, dan 98%.")
+                        st.write("- Recall: Metrik ini mengukur kemampuan model dalam menangkap semua instance positif. Nilai recall untuk kelas 1, 2, 3, dan 4 masing-masing adalah 100%, 88%, 93%, dan 100%.")
+                        st.write("- F1 Score: Metrik ini adalah harmonisasi rata-rata dari precision dan recall. Nilai f1-score untuk kelas 1, 2, 3, dan 4 masing-masing adalah 99%, 91%, 92%, dan 99%.")
+                        st.write("Grafik kanan menampilkan accuracy keseluruhan model yang mencapai 95.2%, menunjukkan bahwa model memiliki tingkat keberhasilan yang tinggi dalam mengklasifikasikan data kualitas air Sungai Citarum.")
+                        st.write("Hasil akurasi model KNN dengan Euclidean Distance adalah 95,2%")
+
+                    elif ml_choice == 'Artificial Neural Network':
+                        st.image(evaluation_image, caption='Grafik hasil evaluasi model Artificial Neural Network')
+                        st.write("Hasil akurasi model Artificial Neural Network adalah X%")  # Ganti X% dengan nilai akurasi yang sebenarnya
+
+                    elif ml_choice == 'Gaussian Naive Bayes':
+                        st.image(evaluation_image, caption='Grafik hasil evaluasi model Gaussian Naive Bayes')
+                        st.write("Gambar di atas menunjukkan hasil metrik untuk klasifikasi kualitas air Sungai Citarum yaitu model Gaussian Naive Bayes dan teknik oversampling SMOTE-ADASYN. Grafik kiri memecah metrik precision, recall, dan f1-score untuk masing-masing dari empat kelas yang dievaluasi.")
+                        st.write("- Precision: Metrik ini mengukur ketepatan prediksi positif model. Nilai precision untuk kelas 1, 2, 3, dan 4 masing-masing adalah 99%, 94%, 82%, dan 94%.")
+                        st.write("- Recall: Metrik ini mengukur kemampuan model dalam menangkap semua instance positif. Nilai recall untuk kelas 1, 2, 3, dan 4 masing-masing adalah 100%, 95%, 89%, dan 83%.")
+                        st.write("- F1 Score: Metrik ini adalah harmonisasi rata-rata dari precision dan recall. Nilai f1-score untuk kelas 1, 2, 3, dan 4 masing-masing adalah 99%, 94%, 85%, dan 88%.")
+                        st.write("Grafik kanan menampilkan accuracy keseluruhan model yang mencapai 92%, menunjukkan bahwa model memiliki tingkat keberhasilan yang tinggi dalam mengklasifikasikan data kualitas air Sungai Citarum.")
+                        st.write("Hasil akurasi model Gaussian Naive Bayes adalah 92%")  # Ganti Y% dengan nilai akurasi yang sebenarnya
+                        
             except ValueError as e:
                 st.write(f"Pastikan semua nilai sudah dimasukkan dengan benar dan dalam format numerik. Kesalahan: {e}")
                 st.write("Tidak boleh ada kolom yang kosong!")
