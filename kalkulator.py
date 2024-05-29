@@ -28,7 +28,7 @@ def predict_quality(model, scaler, BOD, COD, FecalColiform, IP):
 
 def app():
     # Judul aplikasi
-    st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
+    st.title('Kalkulator Klasifikasi Kualitas Air :blue[Sungai Citarum]')
 
     # Pilihan metode machine learning
     ml_choice = st.selectbox('Silahkan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN', 'Artificial Neural Network', 'Gaussian Naive Bayes'])
