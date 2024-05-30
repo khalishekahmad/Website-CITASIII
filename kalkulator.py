@@ -39,7 +39,7 @@ def app():
         scaler_path = 'scaler_knn_euclidean.pkl'
         evaluation_image = 'https://github.com/khalishekahmad/test1/blob/b675d67174108d7957c1832c623639832d1fdd20/Overall%20Classification%20Report%20Metrics%20-%20KNN%20with%20Euclidean%20Distance%20and%20SMOTE-ADASYN.png?raw=true'  # Path to the evaluation image for KNN
     elif ml_choice == 'Artificial Neural Network':
-        model_path = 'model_ann.pkl'
+        model_path = 'model_ann.h5'
         scaler_path = 'scaler_ann.pkl'
         evaluation_image = 'https://path/to/your/ann_evaluation_image.png'  # Ganti dengan path ke gambar evaluasi ANN
     elif ml_choice == 'Gaussian Naive Bayes':
