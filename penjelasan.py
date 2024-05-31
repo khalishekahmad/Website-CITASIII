@@ -168,7 +168,7 @@ def app():
 
         caption_div = st.empty()
         caption_div.markdown('**Rai Barokah Utari**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">',unsafe_allow_html=True)
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/39498.jpg?raw=true', width=200, use_column_width=True)
+        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Rai.jpg?raw=true', width=200, use_column_width=True)
 
     with col3:
         image_div = st.empty()
@@ -176,7 +176,7 @@ def app():
 
         caption_div = st.empty()
         caption_div.markdown('**Ardhien Fadhillah Suhartono**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">',unsafe_allow_html=True)
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Capture.PNG?raw=true', width=200, use_column_width=True)
+        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Ardhien.jpg?raw=true', width=200, use_column_width=True)
 
 # Run the app
 if __name__ == '__main__':
