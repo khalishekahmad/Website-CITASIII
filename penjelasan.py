@@ -160,7 +160,7 @@ def app():
 
         caption_div = st.empty()
         caption_div.markdown('**Daffa Asyqar Ahmad Khalisheka**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">',unsafe_allow_html=True)
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/7fd1c29aedcdb9420c973e1fd7595b6b.jpg?raw=true', width=200, use_column_width=True)
+        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/daffasyqar%20(1).jpg?raw=true', width=200, use_column_width=True)
 
     with col2:
         image_div = st.empty()
