@@ -1,11 +1,13 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import joblib
-import base64  # Impor modul base64 untuk encoding file CSV
-import plotly.express as px  # Impor Plotly untuk visualisasi
+import base64
+import plotly.express as px
+from tensorflow.keras.models import load_model
 
-# Fungsi untuk klasifikasi
-def predict_quality(model, scaler, BOD, COD, FecalColiform, IP):
+# Fungsi untuk klasifikasi Weighted KNN dan Gaussian Naive Bayes
+def predict_quality_general(model, scaler, BOD, COD, FecalColiform, IP):
     input_data = pd.DataFrame([[BOD, COD, FecalColiform, IP]], columns=['BOD', 'COD', 'FecalColiform', 'IP'])
     input_data = scaler.transform(input_data)
     prediction = model.predict(input_data)[0]
@@ -26,30 +28,67 @@ def predict_quality(model, scaler, BOD, COD, FecalColiform, IP):
     
     return prediction, f"Kualitas air Sungai Citarum: {class_labels.get(prediction, 'kelas tidak dikenal')} (Class {prediction})", colors.get(prediction, "#FFFFFF")
 
+# Fungsi untuk klasifikasi ANN
+def predict_quality_ann(model, scaler, BOD, COD, FecalColiform, IP):
+    input_data = pd.DataFrame([[BOD, COD, FecalColiform, IP]], columns=['BOD', 'COD', 'FecalColiform', 'IP'])
+    input_data = scaler.transform(input_data)
+    prediction = model.predict(input_data)
+    
+    # Pastikan prediksi adalah scalar
+    if prediction.ndim > 1:
+        prediction = prediction[0]  # Ambil elemen pertama jika prediksi adalah array 2D
+    prediction = np.argmax(prediction) + 1  # Ambil kelas dengan probabilitas tertinggi (1-based index)
+
+    class_labels = {
+        1: "Tidak tercemar/memenuhi baku mutu",
+        2: "Tercemar ringan",
+        3: "Tercemar sedang",
+        4: "Tercemar berat"
+    }
+    
+    colors = {
+        1: "#6DC5D1",
+        2: "#7ABA78",
+        3: "#FEB941",
+        4: "#C40C0C"
+    }
+    
+    return prediction, f"Kualitas air Sungai Citarum: {class_labels.get(prediction, 'kelas tidak dikenal')} (Class {prediction})", colors.get(prediction, "#FFFFFF")
+
 def app():
-    # Judul aplikasi
-    st.title('Kalkulator Klasifikasi Kualitas Air :blue[Sungai Citarum]')
+# Judul aplikasi
+st.title('Kalkulator Klasifikasi Kualitas Air Sungai Citarum')
 
-    # Pilihan metode machine learning
-    ml_choice = st.selectbox('Silahkan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN', 'Artificial Neural Network', 'Gaussian Naive Bayes'])
+# Pilihan metode machine learning
+ml_choice = st.selectbox('Silakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN', 'Artificial Neural Network', 'Gaussian Naive Bayes'])
 
-    # Load model dan scaler sesuai pilihan
-    if ml_choice == 'Weighted KNN':
-        model_path = 'model_knn_euclidean.pkl'
-        scaler_path = 'scaler_knn_euclidean.pkl'
-        evaluation_image = 'https://github.com/khalishekahmad/test1/blob/b675d67174108d7957c1832c623639832d1fdd20/Overall%20Classification%20Report%20Metrics%20-%20KNN%20with%20Euclidean%20Distance%20and%20SMOTE-ADASYN.png?raw=true'  # Path to the evaluation image for KNN
-    elif ml_choice == 'Artificial Neural Network':
-        model_path = 'model_ann.h5'
-        scaler_path = 'scaler_ann.pkl'
-        evaluation_image = 'https://path/to/your/ann_evaluation_image.png'  # Ganti dengan path ke gambar evaluasi ANN
-    elif ml_choice == 'Gaussian Naive Bayes':
-        model_path = 'model_gnb.pkl'
-        scaler_path = 'scaler_gnb.pkl'
-        evaluation_image = 'https://github.com/khalishekahmad/test1/blob/3bea91c10bc45ae2e417b5f7617a5fd475783be9/Overall%20Classification%20Report%20Metrics%20-%20Gaussian%20Naive%20Bayes%20and%20SMOTE-ADASYN.png?raw=true'  # Ganti dengan path ke gambar evaluasi GNB
+# Memuat model dan scaler berdasarkan pilihan
+model, scaler, evaluation_image = None, None, None
 
+if ml_choice == 'Weighted KNN':
+    model_path = 'model_knn_euclidean.pkl'
+    scaler_path = 'scaler_knn_euclidean.pkl'
+    evaluation_image = 'https://github.com/khalishekahmad/test1/blob/ba5b64fdc67c6c2962dbc1e8f948e6ed3f3a6e19/Overall%20Classification%20Report%20Metrics%20-%20KNN%20dengan%20Euclidean%20Distance%20dan%20SMOTE-ADASYN.png?raw=true'
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
+elif ml_choice == 'Artificial Neural Network':
+    model_path = 'model_ann.h5'
+    scaler_path = 'scaler_ann.pkl'
+    evaluation_image = 'https://github.com/khalishekahmad/test1/blob/7f79c4b18a0f858fb8130c4a471b580bbcf26bdb/Overall%20Classification%20Report%20Metrics%20-%20Artificial%20Neural%20Network%20dan%20SMOTE-ADASYN.png?raw=true'
+    try:
+        model = load_model(model_path)
+    except Exception as e:
+        st.write(f"Kesalahan saat memuat model: {e}")
+    scaler = joblib.load(scaler_path) if model else None
+elif ml_choice == 'Gaussian Naive Bayes':
+    model_path = 'model_gnb.pkl'
+    scaler_path = 'scaler_gnb.pkl'
+    evaluation_image = 'https://github.com/khalishekahmad/test1/blob/7f79c4b18a0f858fb8130c4a471b580bbcf26bdb/Overall%20Classification%20Report%20Metrics%20-%20Gaussian%20Naive%20Bayes%20dan%20SMOTE-ADASYN.png?raw=true'
     model = joblib.load(model_path)
     scaler = joblib.load(scaler_path)
 
+# Pastikan model berhasil dimuat sebelum melanjutkan
+if model and scaler:
     # Pilihan metode input data
     choice = st.selectbox('Pilih metode input data', ['Manual', 'Upload File'])
 
@@ -74,7 +113,7 @@ def app():
         if 'IP' not in st.session_state:
             st.session_state.IP = ""
 
-        # Input parameter dari user dalam tiga kolom
+        # Parameter input pengguna dalam tiga kolom
         col1, col2, col3 = st.columns(3)
 
         with col1:
@@ -98,7 +137,7 @@ def app():
         with col1:
             if st.button('Klasifikasi'):
                 try:
-                    # Konversi input menjadi float
+                    # Konversi input ke float
                     pH = float(st.session_state.pH)
                     TSS = float(st.session_state.TSS)
                     DO = float(st.session_state.DO)
@@ -109,38 +148,50 @@ def app():
                     Fosfat = float(st.session_state.Fosfat)
                     IP = float(st.session_state.IP)
 
-                    # Pengecekan nilai negatif
+                    # Periksa nilai negatif
                     if any(val < 0 for val in [pH, TSS, DO, BOD, COD, Nitrat, FecalColiform, Fosfat, IP]):
-                        st.write("Tidak boleh ada nilai negatif. Pastikan semua nilai sudah benar.")
+                        st.write("OOPS! Tidak boleh ada nilai negatif! Pastikan semua nilai sudah benar. (:")
                     else:
-                        prediction, result, color = predict_quality(model, scaler, BOD, COD, FecalColiform, IP)
+                        if ml_choice == 'Artificial Neural Network':
+                            prediction, result, color = predict_quality_ann(model, scaler, BOD, COD, FecalColiform, IP)
+                        else:
+                            prediction, result, color = predict_quality_general(model, scaler, BOD, COD, FecalColiform, IP)
+                        
                         st.markdown(f'<div style="background-color:{color};padding:10px;border-radius:5px;">{result}</div>', unsafe_allow_html=True)
 
+                        # Tampilkan tabel rentang nilai parameter indeks pencemaran
+                        st.image('https://github.com/khalishekahmad/test1/blob/7f79c4b18a0f858fb8130c4a471b580bbcf26bdb/Tabel%20Rentang%20Nilai%20Parameter%20Indeks%20Pencemaran.png?raw=true', caption='Tabel Rentang Nilai Parameter Indeks Pencemaran untuk Klasifikasi Kualitas Air Sungai Citarum')
+                        
                         if ml_choice == 'Weighted KNN':
-                            st.image(evaluation_image, caption='Grafik hasil evaluasi model KNN with Euclidean Distance')
+                            st.image(evaluation_image, caption='Grafik hasil evaluasi model KNN dengan Euclidean Distance')
                             st.write("Gambar di atas menunjukkan hasil metrik untuk klasifikasi kualitas air Sungai Citarum yaitu model KNN yang menggunakan Euclidean Distance dan teknik oversampling SMOTE-ADASYN. Grafik kiri memecah metrik precision, recall, dan f1-score untuk masing-masing dari empat kelas yang dievaluasi.")
-                            st.write("- Precision: Metrik ini mengukur ketepatan prediksi positif model. Nilai precision untuk kelas 1, 2, 3, dan 4 masing-masing adalah 98%, 95%, 90%, dan 98%.")
-                            st.write("- Recall: Metrik ini mengukur kemampuan model dalam menangkap semua instance positif. Nilai recall untuk kelas 1, 2, 3, dan 4 masing-masing adalah 100%, 88%, 93%, dan 100%.")
-                            st.write("- F1 Score: Metrik ini adalah harmonisasi rata-rata dari precision dan recall. Nilai f1-score untuk kelas 1, 2, 3, dan 4 masing-masing adalah 99%, 91%, 92%, dan 99%.")
-                            st.write("Grafik kanan menampilkan accuracy keseluruhan model yang mencapai 95.2%, menunjukkan bahwa model memiliki tingkat keberhasilan yang tinggi dalam mengklasifikasikan data kualitas air Sungai Citarum.")
-                            st.write("Hasil akurasi model KNN dengan Euclidean Distance adalah 95,2%")
+                            st.write("- Precision: Metrik ini mengukur ketepatan prediksi positif model. Nilai precision untuk kelas 1, 2, 3, dan 4 masing-masing adalah 95%, 98%, 89%, dan 97%.")
+                            st.write("- Recall: Metrik ini mengukur kemampuan model dalam menangkap semua instance positif. Nilai recall untuk kelas 1, 2, 3, dan 4 masing-masing adalah 100%, 83%, 95%, dan 100%.")
+                            st.write("- F1 Score: Metrik ini adalah harmonisasi rata-rata dari precision dan recall. Nilai f1-score untuk kelas 1, 2, 3, dan 4 masing-masing adalah 97%, 90%, 92%, dan 98%.")
+                            st.write("Grafik kanan menampilkan accuracy keseluruhan model yang mencapai 94,7% menunjukkan bahwa model memiliki tingkat keberhasilan yang tinggi dalam mengklasifikasikan data kualitas air Sungai Citarum.")
+                            st.write("Hasil akurasi model KNN dengan Euclidean Distance dan SMOTE-ADASYN adalah 94,7")
 
                         elif ml_choice == 'Artificial Neural Network':
                             st.image(evaluation_image, caption='Grafik hasil evaluasi model Artificial Neural Network')
-                            st.write("Hasil akurasi model Artificial Neural Network adalah X%")  # Ganti X% dengan nilai akurasi yang sebenarnya
+                            st.write("Gambar di atas menunjukkan hasil metrik untuk klasifikasi kualitas air Sungai Citarum yaitu model Artificial Neural Network dan teknik oversampling SMOTE-ADASYN. Grafik kiri memecah metrik precision, recall, dan f1-score untuk masing-masing dari empat kelas yang dievaluasi.")
+                            st.write("- Precision: Metrik ini mengukur ketepatan prediksi positif model. Nilai precision untuk kelas 1, 2, 3, dan 4 masing-masing adalah 89%, 92%, 89%, dan 99%.")
+                            st.write("- Recall: Metrik ini mengukur kemampuan model dalam menangkap semua instance positif. Nilai recall untuk kelas 1, 2, 3, dan 4 masing-masing adalah 100%, 76%, 92%, dan 100%.")
+                            st.write("- F1 Score: Metrik ini adalah harmonisasi rata-rata dari precision dan recall. Nilai f1-score untuk kelas 1, 2, 3, dan 4 masing-masing adalah 94%, 83%, 90%, dan 99%.")
+                            st.write("Grafik kanan menampilkan accuracy keseluruhan model yang mencapai 91,8% menunjukkan bahwa model memiliki tingkat keberhasilan yang tinggi dalam mengklasifikasikan data kualitas air Sungai Citarum.")
+                            st.write("Hasil akurasi model Artificial Neural Network dan SMOTE-ADASYN adalah 91,8")
 
                         elif ml_choice == 'Gaussian Naive Bayes':
                             st.image(evaluation_image, caption='Grafik hasil evaluasi model Gaussian Naive Bayes')
-                            st.write("Gambar di atas menunjukkan hasil metrik untuk klasifikasi kualitas air Sungai Citarum yaitu model Gaussian Naive Bayes dan teknik oversampling SMOTE-ADASYN. Grafik kiri memecah metrik precision, recall, dan f1-score untuk masing-masing dari empat kelas yang dievaluasi.")
-                            st.write("- Precision: Metrik ini mengukur ketepatan prediksi positif model. Nilai precision untuk kelas 1, 2, 3, dan 4 masing-masing adalah 99%, 94%, 82%, dan 94%.")
-                            st.write("- Recall: Metrik ini mengukur kemampuan model dalam menangkap semua instance positif. Nilai recall untuk kelas 1, 2, 3, dan 4 masing-masing adalah 100%, 95%, 89%, dan 83%.")
-                            st.write("- F1 Score: Metrik ini adalah harmonisasi rata-rata dari precision dan recall. Nilai f1-score untuk kelas 1, 2, 3, dan 4 masing-masing adalah 99%, 94%, 85%, dan 88%.")
-                            st.write("Grafik kanan menampilkan accuracy keseluruhan model yang mencapai 92%, menunjukkan bahwa model memiliki tingkat keberhasilan yang tinggi dalam mengklasifikasikan data kualitas air Sungai Citarum.")
-                            st.write("Hasil akurasi model Gaussian Naive Bayes adalah 92%")  # Ganti Y% dengan nilai akurasi yang sebenarnya
-                        
+                            st.write("Gambar di atas menunjukkan hasil metrik untuk klasifikasi kualitas air Sungai Citarum yaitu model Artificial Neural Network dan teknik oversampling SMOTE-ADASYN. Grafik kiri memecah metrik precision, recall, dan f1-score untuk masing-masing dari empat kelas yang dievaluasi.")
+                            st.write("- Precision: Metrik ini mengukur ketepatan prediksi positif model. Nilai precision untuk kelas 1, 2, 3, dan 4 masing-masing adalah 100%, 99%, 87%, dan 97%.")
+                            st.write("- Recall: Metrik ini mengukur kemampuan model dalam menangkap semua instance positif. Nilai recall untuk kelas 1, 2, 3, dan 4 masing-masing adalah 100%, 85%, 96%, dan 100%.")
+                            st.write("- F1 Score: Metrik ini adalah harmonisasi rata-rata dari precision dan recall. Nilai f1-score untuk kelas 1, 2, 3, dan 4 masing-masing adalah 100%, 91%, 91%, dan 99%.")
+                            st.write("Grafik kanan menampilkan accuracy keseluruhan model yang mencapai 95,2% menunjukkan bahwa model memiliki tingkat keberhasilan yang tinggi dalam mengklasifikasikan data kualitas air Sungai Citarum.")
+                            st.write("Hasil akurasi model Gaussian Naive Bayes dan SMOTE-ADASYN adalah 95,2")
+
                 except ValueError as e:
-                    st.write(f"Pastikan semua nilai sudah dimasukkan dengan benar dan dalam format numerik. Kesalahan: {e}")
-                    st.write("Tidak boleh ada kolom yang kosong!")
+                    st.write(f"Mohon pastikan semua nilai sudah dimasukkan dengan benar dan dalam format numerik.")
+                    st.write("Tidak boleh ada kolom yang kosong yes!")
 
         with col2:
             if st.button('Reset'):
@@ -155,33 +206,36 @@ def app():
                 st.session_state.IP = ""
 
     elif choice == 'Upload File':
-        # Upload file dataset
+        # Unggah file dataset
         st.write("Unggah file dataset CSV untuk klasifikasi otomatis:")
         uploaded_file = st.file_uploader("Unggah file dataset CSV", type="csv")
 
         if uploaded_file is not None:
-            # Membaca dataset
+            # Baca dataset
             df = pd.read_csv(uploaded_file)
-        
-            # Menampilkan dataset yang diunggah
+            
+            # Tampilkan dataset yang diunggah
             st.write("Dataset yang diunggah:")
-            st.write(df.head())
-        
-            # Memastikan fitur yang dibutuhkan ada dalam dataset
+            st.dataframe(df)  # Menampilkan seluruh dataset
+            
+            # Pastikan fitur yang diperlukan ada dalam dataset
             required_features = ['BOD', 'COD', 'FecalColiform', 'IP']
             if all(feature in df.columns for feature in required_features):
-                # Menambahkan kolom prediksi
-                df['Kualitas Air'] = df.apply(lambda row: predict_quality(model, scaler, row['BOD'], row['COD'], row['FecalColiform'], row['IP'])[1], axis=1)
-            
-                # Menampilkan dataset dengan kolom prediksi
+                # Tambahkan kolom prediksi
+                if ml_choice == 'Artificial Neural Network':
+                    df['Kualitas Air'] = df.apply(lambda row: predict_quality_ann(model, scaler, row['BOD'], row['COD'], row['FecalColiform'], row['IP'])[1], axis=1)
+                else:
+                    df['Kualitas Air'] = df.apply(lambda row: predict_quality_general(model, scaler, row['BOD'], row['COD'], row['FecalColiform'], row['IP'])[1], axis=1)
+                
+                # Tampilkan dataset dengan kolom prediksi
                 st.write("Hasil klasifikasi:")
                 st.write(df)
-            
-                # Count the number of occurrences of each class
+                
+                # Hitung jumlah setiap kelas
                 class_counts = df['Kualitas Air'].value_counts().reset_index()
                 class_counts.columns = ['Kualitas Air', 'Jumlah']
 
-                # Plotting the classification results
+                # Plot hasil klasifikasi
                 fig = px.pie(
                     class_counts,
                     names='Kualitas Air',
@@ -190,12 +244,14 @@ def app():
                     template='plotly_white'
                 )
                 st.plotly_chart(fig)
-            
-                # Menyediakan opsi untuk mengunduh hasil klasifikasi
+                
+                # Opsi untuk mengunduh hasil klasifikasi
                 csv = df.to_csv(index=False)
                 b64 = base64.b64encode(csv.encode()).decode()  # B64 encode
                 href = f'<a href="data:file/csv;base64,{b64}" download="hasil_klasifikasi.csv">Unduh hasil klasifikasi</a>'
                 st.markdown(href, unsafe_allow_html=True)
             else:
                 st.error("Dataset tidak memiliki semua fitur yang dibutuhkan. Pastikan kolom BOD, COD, FecalColiform, dan IP ada dalam dataset.")
+else:
+    st.write("Model tidak dapat dimuat. Pastikan file model valid dan coba lagi.")
 app()
