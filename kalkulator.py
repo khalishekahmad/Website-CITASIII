@@ -253,10 +253,6 @@ def app():
                 else:
                     st.error("Dataset tidak memiliki semua fitur yang dibutuhkan. Pastikan kolom BOD, COD, FecalColiform, dan IP ada dalam dataset.")
     else:
-<<<<<<< Updated upstream
-        st.write("Model tidak dapat dimuat. Pastikan file model valid dan coba lagi.")
-app()
-=======
+
         st.write("Model tidak dapat dimuat. Pastikan file model valid dan coba lagi.")
 app()
->>>>>>> Stashed changes
