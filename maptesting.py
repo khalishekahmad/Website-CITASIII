@@ -1,201 +1,224 @@
 import streamlit as st
-import requests
-from PIL import Image
-from io import BytesIO
+import pandas as pd
+import numpy as np
+import joblib
+import folium
+from tensorflow.keras.models import load_model
+from streamlit_folium import folium_static
+import json
 
-def fetch_image_from_url(url):
-    response = requests.get(url)
-    image = Image.open(BytesIO(response.content))
-    return image
+# Fungsi untuk klasifikasi Weighted KNN dan Gaussian Naive Bayes
+def predict_quality_general(model, scaler, BOD, COD, FecalColiform, IP):
+    input_data = pd.DataFrame([[BOD, COD, FecalColiform, IP]], columns=['BOD', 'COD', 'FecalColiform', 'IP'])
+    input_data = scaler.transform(input_data)
+    prediction = model.predict(input_data)[0]
+    
+    class_labels = {
+        1: "Tidak tercemar/memenuhi baku mutu",
+        2: "Tercemar ringan",
+        3: "Tercemar sedang",
+        4: "Tercemar berat"
+    }
+    
+    return class_labels.get(prediction, 'kelas tidak dikenal')
 
-def resize_image(image, size):
-    resized_image = image.resize(size)
-    return resized_image
+# Fungsi untuk klasifikasi ANN
+def predict_quality_ann(model, scaler, BOD, COD, FecalColiform, IP):
+    input_data = pd.DataFrame([[BOD, COD, FecalColiform, IP]], columns=['BOD', 'COD', 'FecalColiform', 'IP'])
+    input_data = scaler.transform(input_data)
+    prediction = model.predict(input_data)
+    
+    if prediction.ndim > 1:
+        prediction = prediction[0]  
+    prediction = np.argmax(prediction) + 1  
+
+    class_labels = {
+        1: "Tidak tercemar/memenuhi baku mutu",
+        2: "Tercemar ringan",
+        3: "Tercemar sedang",
+        4: "Tercemar berat"
+    }
+    
+    return class_labels.get(prediction, 'kelas tidak dikenal')
+
+# Memuat data GeoJSON
+def load_geojson(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        file_content = f.read().split('=')[1].strip().rstrip(';')
+        return json.loads(file_content)
+
+geojson_data_sungai = load_geojson('Sungai Citarum.js')
+geojson_data_batas = load_geojson('Batas_DAS.js')
+geojson_data_waduk = load_geojson('Waduk.js')
+
+# Memuat data titik-titik sungai dari file CSV
+file_path_points = 'filtered_citarum_points.csv'
+points_data = pd.read_csv(file_path_points)
 
 def app():
-    st.write('Penjelasan')
+    # Menambahkan judul aplikasi
+    st.title('Peta Interaktif Sungai Citarum')
 
-    st.subheader("Website Citasi")
+    # Pilihan metode machine learning
+    st.header("Pilih Model Machine Learning")
+    ml_choice = st.selectbox('Silakan pilih model Machine Learning untuk melihat tampilan peta titik-titik sungai atau tampilkan peta awal', 
+                         ['Tampilan Awal Peta', 'Weighted KNN', 'Artificial Neural Network', 'Gaussian Naive Bayes'])
 
-    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Logo%20Web%20Citasi.png?raw=true"
-    try:
-        image = fetch_image_from_url(image_url)
-        resized_image = image.copy()
-        resized_image.thumbnail((500, 500))
-        st.image(resized_image, caption="Website Citasi", channels="RGB", use_column_width=True)
-        st.write('Proyek ini mengangkat topik "Klasifikasi Kualitas Air Sungai Citarum Menggunakan Pembelajaran Mesin Berbasis Website". Melanjutkan project sebelumnya yang berbasis website dengan nama “quwaci”, dimana menyediakan sistem informasi mengenai kualitas air Sungai Citarum dibagi menjadi 8 titik sepanjang hulu hingga hilir. Dimana pada project kali ini diberikan penambahan fitur-fitur dan metode dalam pengklasifikasian air Sungai Citarum.')
+    # Menampilkan informasi kotak di atas peta dalam dua kolom
+    st.header('Informasi Warna Pada Peta')
+    col1, col2 = st.columns(2)
 
-    except Exception as e:
-        st.error(f"Error fetching and displaying image: {e}")
-    
-    st.subheader("Metode Machine Learning")
-    st.write('Berisikan metode metode Machine Learning yang digunakan pada projek website Citasi, diantaranya terdiri dari KNN with Eucidean Distance, Artificial Neural Network, dan Gaussian Naive Bayes.')
-    
-    st.subheader("1. Weighted KNN")
+    with col1:
+        st.subheader("Status Kualitas Air Sungai")
+        boxes_info = [
+            {"title": "Memenuhi Baku Mutu", "color": "#6DC5D1", "width": "200px", "height": "50px"},
+            {"title": "Tercemar Ringan", "color": "#7ABA78", "width": "200px", "height": "50px"},
+            {"title": "Tercemar Sedang", "color": "#FEB941", "width": "200px", "height": "50px"},
+            {"title": "Tercemar Berat", "color": "#C40C0C", "width": "200px", "height": "50px"}
+        ]
 
-    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/knn.png?raw=true"
-    try:
-        image = fetch_image_from_url(image_url)
-        resized_image = image.copy()
-        resized_image.thumbnail((500, 500))
-        st.image(resized_image, caption="Weighted KNN", channels="RGB", use_column_width=True)
-        st.write('K-Nearest Neighbor merupakan salah satu algoritma yang digunakan dalam pengklasifikasian. Prinsip kerja K-Nearest Neighbor (KNN) adalah mencari jarak terdekat antara data yang akan dievaluasi dengan K-Nearest Neighbor terdekatnya dalam data pelatihan.')
+        for box in boxes_info:
+            st.markdown(
+                f"""
+                <div style="background-color: {box['color']}; width: {box['width']}; height: {box['height']}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-bottom: 10px;">
+                    {box['title']}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-        st.link_button("Baca selengkapnya", "https://www.ibm.com/topics/knn")
+    with col2:
+        st.subheader("Legenda (Keterangan)")
+        legend_items = [
+            {"title": "Aliran Sungai", "color": "blue", "width": "200px", "height": "20px"},
+            {"title": "Batas DAS", "color": "pink", "width": "200px", "height": "20px"}
+        ]
+
+        for item in legend_items:
+            st.markdown(
+                f"""
+                <div style="background-color: {item['color']}; width: {item['width']}; height: {item['height']}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-bottom: 10px;">
+                    {item['title']}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    # Membuat peta awal
+    m = folium.Map(location=[-6.9, 107.6], zoom_start=10, tiles='OpenStreetMap', width='100%', height='600px')
+
+    # Menambahkan data GeoJSON ke peta
+    geojson_sungai = folium.GeoJson(geojson_data_sungai, name="Sungai Citarum", style_function=lambda feature: {
+        'color': 'blue', 'weight': 5
+    })
+
+    geojson_batas = folium.GeoJson(geojson_data_batas, name="Batas DAS", style_function=lambda feature: {
+        'fillColor': 'pink', 'color': 'pink', 'weight': 2, 'fillOpacity': 0.55
+    })
+
+    geojson_waduk = folium.GeoJson(geojson_data_waduk, name="Waduk", style_function=lambda feature: {
+        'color': 'blue', 'weight': 5
+    })
+
+    # Menambahkan titik-titik sungai dari file CSV ke peta
+    if ml_choice == 'Tampilan Awal Peta':
+        for _, row in points_data.iterrows():
+            folium.Marker(location=[row['latitude'], row['longitude']], popup=row['name'], 
+                        icon=folium.Icon(color='blue', icon='tint', prefix='fa')).add_to(m)
+
+        geojson_sungai.add_to(m)
+        geojson_batas.add_to(m)
+        geojson_waduk.add_to(m)
+
+        # Menambahkan kontrol lapisan
+        folium.LayerControl().add_to(m)
+
+        # Menampilkan peta awal di Streamlit
+        folium_static(m, width=777, height=800)
+
+    # Memuat model dan scaler berdasarkan pilihan
+    else:
+        model, scaler = None, None
+
+        if ml_choice == 'Weighted KNN':
+            st.write("Hasil akurasi model KNN dengan Euclidean Distance dan SMOTE-ADASYN adalah 94,7%")
+            model_path = 'model_knn_euclidean.pkl'
+            scaler_path = 'scaler_knn_euclidean.pkl'
+            model = joblib.load(model_path)
+            scaler = joblib.load(scaler_path)
+        elif ml_choice == 'Artificial Neural Network':
+            st.write("Hasil akurasi model Artificial Neural Network dan SMOTE-ADASYN adalah 91,8%")
+            model_path = 'model_ann.h5'
+            scaler_path = 'scaler_ann.pkl'
+            try:
+                model = load_model(model_path)
+            except Exception as e:
+                st.write(f"Kesalahan saat memuat model: {e}")
+            scaler = joblib.load(scaler_path) if model else None
+        elif ml_choice == 'Gaussian Naive Bayes':
+            st.write("Hasil akurasi model Gaussian Naive Bayes dan SMOTE-ADASYN adalah 95,2%")
+            model_path = 'model_gnb.pkl'
+            scaler_path = 'scaler_gnb.pkl'
+            model = joblib.load(model_path)
+            scaler = joblib.load(scaler_path)
+
+        # Memastikan model berhasil dimuat sebelum melanjutkan
+        if model and scaler:
+            file_path_points = 'Dataset_titik_sungai.csv'
+            points_data = pd.read_csv(file_path_points)
         
-    except Exception as e:
-        st.error(f"Error fetching and displaying image: {e}")
+            if ml_choice == 'Artificial Neural Network':
+                points_data['Status'] = points_data.apply(lambda row: predict_quality_ann(model, scaler, row['BOD'], row['COD'], row['FecalColiform'], row['IP']), axis=1)
+            else:
+                points_data['Status'] = points_data.apply(lambda row: predict_quality_general(model, scaler, row['BOD'], row['COD'], row['FecalColiform'], row['IP']), axis=1)
 
-    st.subheader("2. Artificial Neural Network")
+            # Menentukan warna berdasarkan status
+            def get_color(status):
+                if status == "Tidak tercemar/memenuhi baku mutu":
+                    return "#6DC5D1"
+                elif status == "Tercemar ringan":
+                    return "#7ABA78"
+                elif status == "Tercemar sedang":
+                    return "#FEB941"
+                elif status == "Tercemar berat":
+                    return "#C40C0C"
+                else:
+                    return "gray"
 
-    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Neural-Networks-Architecture.png?raw=true"
-    try:
-        image = fetch_image_from_url(image_url)
-        resized_image = image.copy()
-        resized_image.thumbnail((500, 500))
-        st.image(resized_image, caption="Artificial Neural Network", channels="RGB", use_column_width=True)
-        st.write('Jaringan saraf tiruan merupakan salah satu sistem pemrosesan informasi yang di desain dengan menirukan cara kerja otak manusia dalam menyelesaikan suatu masalah dengan melakukan proses belajar melalui perubahan bobot sinapsisnya. Jaringan saraf tiruan mampu melakukan pengenalan kegiatan berbasis data masa lalu. Data masa lalu akan dipelajari oleh jaringan syaraf tiruan sehingga mempunyai kemampuan untuk memberikan keputusan terhadap data yang belum pernah dipelajari.')
+            # Membuat peta tanpa OpenStreetMap, hanya batas DAS, aliran sungai, waduk, dan titik-titik sungai
+            m = folium.Map(location=[-6.9, 107.6], zoom_start=10, width='100%', height='600px')
 
-        st.link_button("Baca Selengkapnya", "https://www.analyticsvidhya.com/blog/2021/09/introduction-to-artificial-neural-networks/")
-        
-    except Exception as e:
-        st.error(f"Error fetching and displaying image: {e}")
+            # Menambahkan data GeoJSON ke peta tanpa opsi lapisan
+            folium.GeoJson(geojson_data_batas, name="Batas DAS", style_function=lambda feature: {
+                'fillColor': 'pink', 'color': 'pink', 'weight': 2, 'fillOpacity': 0.55
+            }).add_to(m)
 
+            folium.GeoJson(geojson_data_sungai, name="Sungai Citarum", style_function=lambda feature: {
+                'color': 'blue', 'weight': 5
+            }).add_to(m)
 
-    st.subheader("3. Gaussian Naive Bayes")
+            folium.GeoJson(geojson_data_waduk, name="Waduk", style_function=lambda feature: {
+                'color': 'blue', 'weight': 5
+            }).add_to(m)
 
-    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/GNB.png?raw=true"
-    try:
-        image = fetch_image_from_url(image_url)
-        resized_image = image.copy()
-        resized_image.thumbnail((500, 500))
-        st.image(resized_image, caption="Gaussian Naive Bayes", channels="RGB", use_column_width=True)
-        st.write('Gaussian Naive Bayes (GNB) adalah teknik klasifikasi yang digunakan dalam pembelajaran mesin berdasarkan pendekatan probabilistik dan distribusi Gaussian. Gaussian Naive Bayes mengasumsikan bahwa setiap parameter, disebut juga fitur atau prediktor, memiliki kapasitas independen dalam memprediksi variabel keluaran.')
+            # Menambahkan titik-titik sungai yang telah diprediksi ke peta dengan warna yang sesuai
+            for _, row in points_data.iterrows():
+                color = get_color(row['Status'])
+                popup_content = f"""
+                <b>Status:</b> {row['Status']}<br>
+                <b>Nama:</b> {row['Titik Sungai']}<br>
+                <b>Alamat:</b> {row['Alamat']}
+                """
+                folium.CircleMarker(
+                    location=[row['Latitude'], row['Longitude']],
+                    radius=8,
+                    color=color,
+                    fill=True,
+                    fill_color=color,
+                    fill_opacity=1,
+                    popup=popup_content
+                ).add_to(m)
 
-        st.link_button("Baca Selengkapnya", "https://builtin.com/artificial-intelligence/gaussian-naive-bayes")
-        
-    except Exception as e:
-        st.error(f"Error fetching and displaying image: {e}")
-
-    st.subheader('Dataset')
-    with st.container():
-        col1, col2, col3 = st.columns(3)
-
-    with col1:
-        image_div = st.empty()
-        st.write("")
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/images.png?raw=true')
-
-    with col2:
-        image_div = st.empty()
-        st.write("")
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/7b4924a3f4fa7fffbe7e132073440d18.png?raw=true')
-
-    with col3:
-        image_div = st.empty()
-        st.write("")
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/images%20(1).png?raw=true')
-    
-    st.write('Dengan menggunakan dataset yang sudah didapatkan dari Dinas Lingkungan Hidup dan Kebersihan Kota Bandung, nantinya akan dipilih tiga metode pembelajaran mesin yang dikiranya dapat memberikan hasil yang optimal. Di dalam dataset tersebut terdiri dari parameter kualitas air yaitu pH, TSS, DO, BOD, COD, Nitrat, Fecal Coliform, Fosfat, dan IP. Kemudian memisahkan datanya menjadi data latih dan data uji lalu membuat model pembelajaran mesin dari setiap model yang sudah ditentukan sebagai alternatif usulan solusi untuk klasifikasi kualitas air Sungai Citarum.')
-    st.link_button('Tempat Mendapatkan Dataset', 'https://opendata.jabarprov.go.id/id')
-    
-    st.subheader("Kandungan Dalam Air")
-    st.write('Berikut merupakan penjelasan mengenai data kandungan air yang terdapat pada website Citasi. Website akan menampilkan data data yang lengkap pada setiap titik poin. Dimana data yang yang diberikan akan berisikan, pH, TSS, DO, BOD, COD, Nitrat, Fecal Coliform, Fosfat, dan IP yang nantinya akan digunakan sebagai indikator untuk kualitas air pada titik tersebut.')
-
-    with st.container():
-        col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.subheader('1. pH')
-        st.write('pH (Potential of Hydrogen) adalah derajat keasaman yang digunakan untuk menyatakan tingkat keasaman atau kebasaan yang dimiliki oleh suatu larutan. Ia didefinisikan sebagai kologaritma aktivitas ion hidrogen (H+) yang terlarut. Koefisien aktivitas ion hidrogen tidak dapat diukur secara eksperimental, sehingga nilainya didasarkan pada perhitungan teoretis. Skala pH bukanlah skala absolut. Ia bersifat relatif terhadap sekumpulan larutan standar yang pH-nya ditentukan berdasarkan persetujuan internasional.')
-        st.link_button("Bca Selengkapnya", "https://www.usgs.gov/special-topics/water-science-school/science/ph-and-water#:~:text=oil%20or%20alcohol.-,pH%20is%20a%20measure%20of%20how%20acidic%2Fbasic%20water%20is,hydroxyl%20ions%20in%20the%20water.")
-
-    with col2:
-        st.subheader('2. TSS')
-        st.write('TSS (Total Suspended Solid) atau total padatan tersuspensi adalah padatan yang tersuspensi di dalam air berupa bahan-bahan organik dan inorganic yang dapat disaring dengan kertas millipore berpori pori 0,45 μm. Materi yang tersuspensi mempunyai dampak buruk terhadap kualitas air karena mengurangi penetrasi matahari ke dalam badan air, kekeruhan air meningkat yang menyebabkan gangguan pertumbuhan bagi organisme produser.')
-        st.link_button('Baca Selengkapnya', 'https://www.handalselaras.com/total-suspended-solid-tss/')
-
-    with col3:
-        st.subheader('3. DO')
-        st.write('DO (Dissolved Oxygen) merupakan faktor penting untuk keberlangsungan hidup organisme air. Istilah Dissolved Oxygen merupakan jumlah oksigen yang tidak terikat dan terkandung bebas dalam air. Indikator ini merupakan salah satu parameter yang dapat menentukan kesehatan lingkungan air untuk organisme yang hidup didalamnya.')
-        st.link_button('Baca Selengkapnya', 'https://www.epa.gov/national-aquatic-resource-surveys/indicators-dissolved-oxygen#:~:text=What%20is%20dissolved%20oxygen%3F,of%20a%20pond%20or%20lake.')
-
-    with col1:
-        st.subheader('4. BOD')
-        st.write('BOD atau Biochemical Oxygen Demand adalah suatu karakteristik yang menunjukkan jumlah oksigen terlarut yang diperlukan oleh mikroorganisme (biasanya bakteri) untuk mengurai atau mendekomposisi bahan organik dalam kondisi aerobik.')
-        st.link_button('Baca Selengkapnya', 'https://waterpedia.co.id/pengertian-cod-dan-bod/')
-
-    with col2:
-        st.subheader('5. COD')
-        st.write('Chemical Oxygen Demand (COD) adalah ukuran jumlah bahan kimia yang dapat dioksidasi dalam air. Tingkat COD yang tinggi di Sungai Citarum dapat menunjukkan tingkat polusi organik yang tinggi, seperti yang disebabkan oleh limbah domestik dan industri. Tingkat COD yang tinggi dapat merugikan ekosistem sungai dan kesehatan manusia yang bergantung pada air.')
-        st.link_button('Baca Selengkapnya', 'https://waterpedia.co.id/pengertian-cod-dan-bod/')
-
-    with col3:
-        st.subheader('6. Nitrat')
-        st.write('Nitrat adalah senyawa nitrogen yang paling teroksidasi penuh dan oleh karena itu stabil terhadap oksidasi, tetapi berpotensi menjadi agen pengoksidasi yang kuat. Nitrat yang terdapat di dalam sumber air seperti misalnya air sumur gali dan sungai umumnya berasal dari pencemaran bahan-bahan kimia (pupuk urea, ZA, dan lain-lainnya) di bagian hulu.')
-        st.link_button('Baca Selengkapnya', 'https://jurnal.unismuhpalu.ac.id/index.php/JKS/article/view/3357')
-
-    with col1:
-        st.subheader('7. Fecal Coliform')
-        st.write('Bakteri koliform adalah kumpulan mikroorganisme yang relatif tidak berbahaya yang hidup dalam jumlah besar di usus manusia dan hewan berdarah panas dan dingin. Mereka membantu pencernaan makanan. Subkelompok spesifik dari koleksi ini adalah bakteri fecal coliform, anggota yang paling umum adalah Escherichia coli. Organisme ini dapat dipisahkan dari kelompok koliform total karena kemampuannya untuk tumbuh pada suhu tinggi dan hanya berhubungan dengan kotoran hewan berdarah panas.')
-        st.link_button('Baca Selengkapnya', 'https://www.knowyourh2o.com/outdoor-4/fecal-coliform-bacteria-in-water')
-
-    with col2:
-        st.subheader('8. Fosfat')
-        st.write('Fosfat adalah salah satu unsur penting bagi pembentukan protein dan metabolisme. Senyawa ini termasuk turunan fosfor yang dapat ditemukan di tanah, udara, dan sedimen. Hal tersebut dijelaskan Anthon Masela dalam buku Karaginan Rumput Laut (Eucheuma Cottonii): Tinjauan Karakteristik Fisika dan Kimia. Fosfor yang ditemukan di alam, mencakup tanah, udara, dan sedimen, memiliki bentuk senyawa fosfat (batuan fosfat). Tidak seperti senyawa bahan lain, fosfor tidak dapat ditemukan di udara bertekanan tinggi.')
-        st.link_button('Baca Selengkapnya', 'https://www.detik.com/edu/detikpedia/d-6280990/mengenal-fosfat-dan-kegunaannya-dalam-kehidupan-manusia')
-
-    with col3:
-        st.subheader('9. IP')
-        st.write('IP Rating Kode IP atau International Protection Rating, sering juga diinterpretasikan sebagai Ingress Protection Rating* terdiri dari huruf IP diikuti oleh dua digit dan huruf tambahan. didefinisikan dalam standar internasional IEC 60529, itu mengklasifikasikan derajat perlindungan yang diberikan terhadap intrusi benda padat (termasuk bagian tubuh seperti tangan dan jari), debu, kontak tidak disengaja, dan udara pada yang mengandung listrik.')
-        st.link_button('Baca Selengkapnya', 'https://multimeter-digital.com/ip-rating-tingkat-ketahanan-alat-terhadap-lingkungan.html')
-
-    st.subheader('Team Capstone')
-    with st.container():
-        col1, col2, col3 = st.columns(3)
-
-    st.markdown("""
-    <style>
-    .image-container {
-        display: flex;
-        justify-content: center;
-    }
-    .image-container img {
-        width: 200px; /* set the desired width */
-        height: auto; /* maintain aspect ratio */
-        margin-bottom: 10px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # Column 1
-    with col1:
-        image_div = st.empty()
-        st.write("")  # Add empty line for spacing
-
-        caption_div = st.empty()
-        caption_div.markdown('**Daffa Asyqar Ahmad Khalisheka**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">', unsafe_allow_html=True)
-        image_div.markdown('<div class="image-container"><img src="https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/daffasyqar%20(1).jpg?raw=true"></div>', unsafe_allow_html=True)
-
-    # Column 2
-    with col2:
-        image_div = st.empty()
-        st.write("")  # Add empty line for spacing
-
-        caption_div = st.empty()
-        caption_div.markdown('**Rai Barokah Utari**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">', unsafe_allow_html=True)
-        image_div.markdown('<div class="image-container"><img src="https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Rai.jpg?raw=true"></div>', unsafe_allow_html=True)
-
-    # Column 3
-    with col3:
-        image_div = st.empty()
-        st.write("")  # Add empty line for spacing
-
-        caption_div = st.empty()
-        caption_div.markdown('**Ardhien Fadhillah Suhartono**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">', unsafe_allow_html=True)
-        image_div.markdown('<div class="image-container"><img src="https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Ardhien.jpg?raw=true"></div>', unsafe_allow_html=True)
-
-# Run the app
-if __name__ == '__main__':
-    app()
-
+            # Menampilkan peta dengan prediksi di Streamlit
+            folium_static(m, width=777, height=800)
+app()
