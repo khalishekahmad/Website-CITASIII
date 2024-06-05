@@ -9,20 +9,14 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-def admin_app():
-    st.title('Admin - User Verification')
+def app():
+    st.title('Admin - Verifikasi Pengguna')
     users_ref = db.collection('users')
     pending_users = users_ref.where('verified', '==', False).stream()
 
     for user in pending_users:
         user_data = user.to_dict()
         st.write(f"Username: {user_data['username']}, Email: {user_data['email']}")
-        
-        button_key = f'verify_{user.id}'
-        if st.button(f'Verify {user_data["username"]}', key=button_key):
+        if st.button(f'Verify {user_data["username"]}', key=user.id):
             users_ref.document(user.id).update({'verified': True})
-            st.success(f'User {user_data["username"]} has been verified')
-            st.experimental_rerun()
-
-if __name__ == '__main__':
-    admin_app()
+            st.success(f'Pengguna {user_data["username"]} telah diverifikasi')

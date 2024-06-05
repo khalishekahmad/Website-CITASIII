@@ -181,3 +181,4 @@ def app():
 # Run the app
 if __name__ == '__main__':
     app()
+st.caption('Copyright © Citasi 2024')

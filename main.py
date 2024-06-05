@@ -1,13 +1,15 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 
-import account, kalkulator, maps, penjelasan
-
+# Set page configuration first
 st.set_page_config(
     page_title="Citasi",
     page_icon="https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Logo%20Website%20Citasi.png?raw=true",  # Ganti dengan URL logo Anda
     layout="centered"  # Layout halaman
 )
+
+# Import other necessary modules after setting page config
+from streamlit_option_menu import option_menu
+import account, kalkulator, maps, penjelasan
 
 class MultiApp:
     def __init__(self):
@@ -56,3 +58,5 @@ multi_app.add_app("Penjelasan", penjelasan.app)
 
 # Jalankan aplikasi
 multi_app.run()
+
+st.caption('Copyright © Citasi 2024')

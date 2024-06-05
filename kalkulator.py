@@ -256,3 +256,4 @@ def app():
 
         st.write("Model tidak dapat dimuat. Pastikan file model valid dan coba lagi.")
 app()
+st.caption('Copyright © Citasi 2024')

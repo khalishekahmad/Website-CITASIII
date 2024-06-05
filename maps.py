@@ -223,3 +223,4 @@ def app():
             folium_static(m, width=777, height=590)
 
 app()
+st.caption('Copyright © Citasi 2024')
