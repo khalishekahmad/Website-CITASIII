@@ -5,7 +5,7 @@ import account, kalkulator, maps, penjelasan
 
 st.set_page_config(
     page_title="Citasi",
-    page_icon="https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Logo%20Web%20Citasi.png?raw=true",  # Ganti dengan URL logo Anda
+    page_icon="https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Logo%20Website%20Citasi.png?raw=true",  # Ganti dengan URL logo Anda
     layout="centered"  # Layout halaman
 )
 

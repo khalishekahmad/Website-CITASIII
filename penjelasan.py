@@ -17,7 +17,7 @@ def app():
 
     st.subheader("Website Citasi")
 
-    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Logo%20Web%20Citasi.png?raw=true"
+    image_url = "https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Logo%20Website%20Citasi.png?raw=true"
     try:
         image = fetch_image_from_url(image_url)
         resized_image = image.copy()
@@ -168,7 +168,7 @@ def app():
 
         caption_div = st.empty()
         caption_div.markdown('**Rai Barokah Utari**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">',unsafe_allow_html=True)
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Rai.jpg?raw=true', width=200, use_column_width=True)
+        st.image('https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Rai.jpg?raw=true', width=200, use_column_width=True)
 
     with col3:
         image_div = st.empty()
@@ -176,7 +176,7 @@ def app():
 
         caption_div = st.empty()
         caption_div.markdown('**Ardhien Fadhillah Suhartono**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">',unsafe_allow_html=True)
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Ardhien.jpg?raw=true', width=200, use_column_width=True)
+        st.image('https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Ardhien.jpg?raw=true', width=200, use_column_width=True)
 
 # Run the app
 if __name__ == '__main__':
