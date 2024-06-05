@@ -51,18 +51,18 @@ geojson_data_sungai = load_geojson('Sungai Citarum.js')
 geojson_data_batas = load_geojson('Batas_DAS.js')
 geojson_data_waduk = load_geojson('Waduk.js')
 
-# Memuat data titik-titik sungai dari file CSV
-file_path_points = 'filtered_citarum_points.csv'
-points_data = pd.read_csv(file_path_points)
-
 def app():
+    # Memuat data titik-titik sungai dari file CSV
+    file_path_points = 'filtered_citarum_points.csv'
+    points_data = pd.read_csv(file_path_points)
+
     # Menambahkan judul aplikasi
     st.title('Peta Interaktif Sungai Citarum')
 
     # Pilihan metode machine learning
     st.header("Pilih Model Machine Learning")
     ml_choice = st.selectbox('Silakan pilih model Machine Learning untuk melihat tampilan peta titik-titik sungai atau tampilkan peta awal', 
-                         ['Tampilan Awal Peta', 'Weighted KNN', 'Artificial Neural Network', 'Gaussian Naive Bayes'])
+                            ['Tampilan Awal Peta', 'Weighted KNN', 'Artificial Neural Network', 'Gaussian Naive Bayes'])
 
     # Menampilkan informasi kotak di atas peta dalam dua kolom
     st.header('Informasi Warna Pada Peta')
@@ -134,7 +134,7 @@ def app():
         folium.LayerControl().add_to(m)
 
         # Menampilkan peta awal di Streamlit
-        folium_static(m, width=777, height=800)
+        folium_static(m, width=777, height=590)
 
     # Memuat model dan scaler berdasarkan pilihan
     else:
@@ -220,5 +220,6 @@ def app():
                 ).add_to(m)
 
             # Menampilkan peta dengan prediksi di Streamlit
-            folium_static(m, width=777, height=800)
+            folium_static(m, width=777, height=590)
+
 app()
