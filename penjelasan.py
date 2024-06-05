@@ -33,7 +33,7 @@ def app():
     
     st.subheader("1. Weighted KNN")
 
-    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/knn.png?raw=true"
+    image_url = "https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/knn.png?raw=true"
     try:
         image = fetch_image_from_url(image_url)
         resized_image = image.copy()
@@ -48,7 +48,7 @@ def app():
 
     st.subheader("2. Artificial Neural Network")
 
-    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/Neural-Networks-Architecture.png?raw=true"
+    image_url = "https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Neural-Networks-Architecture.png?raw=true"
     try:
         image = fetch_image_from_url(image_url)
         resized_image = image.copy()
@@ -64,7 +64,7 @@ def app():
 
     st.subheader("3. Gaussian Naive Bayes")
 
-    image_url = "https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/GNB.png?raw=true"
+    image_url = "https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/GNB.png?raw=true"
     try:
         image = fetch_image_from_url(image_url)
         resized_image = image.copy()
@@ -84,17 +84,17 @@ def app():
     with col1:
         image_div = st.empty()
         st.write("")
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/images.png?raw=true')
+        st.image('https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Logo%20DLH.png?raw=true')
 
     with col2:
         image_div = st.empty()
         st.write("")
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/7b4924a3f4fa7fffbe7e132073440d18.png?raw=true')
+        st.image('https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Gedung%20DLHK.png?raw=true')
 
     with col3:
         image_div = st.empty()
         st.write("")
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/images%20(1).png?raw=true')
+        st.image('https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Logo%20DLHK%20Bandung.png?raw=true')
     
     st.write('Dengan menggunakan dataset yang sudah didapatkan dari Dinas Lingkungan Hidup dan Kebersihan Kota Bandung, nantinya akan dipilih tiga metode pembelajaran mesin yang dikiranya dapat memberikan hasil yang optimal. Di dalam dataset tersebut terdiri dari parameter kualitas air yaitu pH, TSS, DO, BOD, COD, Nitrat, Fecal Coliform, Fosfat, dan IP. Kemudian memisahkan datanya menjadi data latih dan data uji lalu membuat model pembelajaran mesin dari setiap model yang sudah ditentukan sebagai alternatif usulan solusi untuk klasifikasi kualitas air Sungai Citarum.')
     st.link_button('Tempat Mendapatkan Dataset', 'https://opendata.jabarprov.go.id/id')
@@ -160,7 +160,7 @@ def app():
 
         caption_div = st.empty()
         caption_div.markdown('**Daffa Asyqar Ahmad Khalisheka**<br><p style="margin-top:-10px;">S1 Teknik Komputer</p><hr style="width: 100%; margin: 3px 0;">',unsafe_allow_html=True)
-        st.image('https://github.com/ardhien50/Website-Citasi_coba/blob/main/WebsiteCitasi/Gambar/daffasyqar%20(1).jpg?raw=true', width=200, use_column_width=True)
+        st.image('https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/daffasyqar.jpg?raw=true', width=200, use_column_width=True)
 
     with col2:
         image_div = st.empty()

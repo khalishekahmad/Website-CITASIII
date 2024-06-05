@@ -94,14 +94,20 @@ def send_verification_email(email, username):
     admin_email = "citasi2024@gmail.com"
     msg = MIMEText(f"Please verify the new user:\n\nUsername: {username}\nEmail: {email}")
     msg['Subject'] = 'New User Verification Needed'
-    msg['From'] = 'noreply@example.com'
+    msg['From'] = 'citasi2024@gmail.com'
     msg['To'] = admin_email
 
     # Using SMTP to send the email
     with smtplib.SMTP('smtp.gmail.com', 587) as server:
         server.starttls()
-        server.login('citasi2024@gmail.com', '@WebsiteCitasi')  # Use app password here
-        server.sendmail('noreply@example.com', admin_email, msg.as_string())
+        try:
+            server.login('citasi2024@gmail.com', 'your_app_password')  # Use app password here
+            server.sendmail('citasi2024@gmail.com', admin_email, msg.as_string())
+            st.info('Verification email sent successfully.')
+        except smtplib.SMTPAuthenticationError as e:
+            st.error(f'SMTP Authentication Error: {e}')
+        except Exception as e:
+            st.error(f'Error sending email: {e}')
 
 if __name__ == '__main__':
     app()
