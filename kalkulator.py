@@ -129,7 +129,7 @@ def app():
             with col3:
                 st.session_state.FecalColiform = st.text_input('Fecal Coliform:', value=st.session_state.FecalColiform, help="Fecal Coliform adalah sekelompok bakteri yang ditemukan di usus hewan berdarah panas dan digunakan sebagai indikator kontaminasi feses dalam air, dalam jumlah koloni per 100 mililiter (cfu/100 mL).", placeholder="50 - 100 jml/100L")
                 st.session_state.Fosfat = st.text_input('Fosfat:', value=st.session_state.Fosfat, help="Phosphate (PO4) adalah ukuran konsentrasi fosfat dalam air, dalam miligram per liter (mg/L).", placeholder="0.03 - 0.1 mg/L")
-                st.session_state.IP = st.text_input('Indeks Pencemaran (IP):', value=st.session_state.IP, help="Indeks Pencemaran (IP) adalah ukuran polusi pada sungai.", placeholder="Masukkan nilai IP...")
+                st.session_state.IP = st.text_input('Indeks Pencemaran (IP):', value=st.session_state.IP, help="Indeks Pencemaran (IP) adalah ukuran polusi pada sungai.", placeholder="Masukkan nilai/angka IP...")
 
             # Tombol untuk klasifikasi dan reset
             col1, col2 = st.columns(2)
