@@ -146,9 +146,14 @@ def app():
         st.link_button('Baca Selengkapnya', 'https://www.detik.com/edu/detikpedia/d-6280990/mengenal-fosfat-dan-kegunaannya-dalam-kehidupan-manusia')
 
     with col3:
-        st.subheader('9. IP')
-        st.write('IP Rating Kode IP atau International Protection Rating, sering juga diinterpretasikan sebagai Ingress Protection Rating* terdiri dari huruf IP diikuti oleh dua digit dan huruf tambahan. didefinisikan dalam standar internasional IEC 60529, itu mengklasifikasikan derajat perlindungan yang diberikan terhadap intrusi benda padat (termasuk bagian tubuh seperti tangan dan jari), debu, kontak tidak disengaja, dan udara pada yang mengandung listrik.')
-        st.link_button('Baca Selengkapnya', 'https://multimeter-digital.com/ip-rating-tingkat-ketahanan-alat-terhadap-lingkungan.html')
+        st.subheader('9. IP (Indeks Pencemaran)')
+        st.write('Indeks Pencemaran Kualitas Air Sungai (IP) digunakan untuk mengukur tingkat pencemaran air berdasarkan parameter seperti pH, suhu, oksigen terlarut (DO), kebutuhan oksigen biokimia (BOD), kekeruhan, total padatan tersuspensi (TSS), fosfat, nitrat, dan jumlah faecal coliform. Berdasarkan nilai IP, kualitas air diklasifikasikan sebagai berikut:')
+        st.write('1. Tidak Tercemar/Memenuhi Baku Mutu (0 ≤ IP ≤ 1): Air masih bersih dan sesuai standar.')
+        st.write('2. Tercemar Ringan (1 < IP ≤ 5): Sedikit tercemar, namun masih dapat ditoleransi.')
+        st.write('3. Tercemar Sedang (5 < IP ≤ 10): Pencemaran mulai mempengaruhi ekosistem dan penggunaan air.')
+        st.write('4. Tercemar Berat (IP ≥ 10): Air sangat tercemar, memerlukan tindakan segera.')
+        st.write('Indeks ini membantu dalam mengidentifikasi tingkat pencemaran dan menentukan langkah pengendalian yang diperlukan untuk menjaga kualitas air dan ekosistem.')
+        st.link_button('Baca Selengkapnya', 'https://ppkl.menlhk.go.id/website/filebox/502/180719182446Indeks%20Kualitas%20Air.pdf')
 
     st.subheader('Team Capstone')
     with st.container():
