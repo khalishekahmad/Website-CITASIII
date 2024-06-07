@@ -14,7 +14,7 @@ def resize_image(image, size):
 
 def app():
     # Menambahkan judul untuk video
-    st.subheader("Video Pameran CITASI")
+    st.subheader("Video Pameran Citasi")
 
     # HTML code untuk menyematkan video YouTube
     video_html = """
@@ -22,9 +22,8 @@ def app():
     
     # Menampilkan video di Streamlit
     st.markdown(video_html, unsafe_allow_html=True)
-    
-    st.write('Penjelasan')
 
+    #Menampilkan informasi Web CITASI
     st.subheader("Website Citasi")
 
     image_url = "https://github.com/ardhien50/Website-CITASI/blob/Front-End/Gambar/Logo%20Website%20Citasi.png?raw=true"
