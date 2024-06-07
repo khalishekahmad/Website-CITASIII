@@ -5,6 +5,7 @@ import joblib
 import base64
 import plotly.express as px
 from tensorflow.keras.models import load_model
+from streamlit_modal import Modal
 
 # Fungsi untuk klasifikasi Weighted KNN dan Gaussian Naive Bayes
 def predict_quality_general(model, scaler, BOD, COD, FecalColiform, IP):
