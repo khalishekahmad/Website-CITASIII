@@ -5,6 +5,7 @@ import joblib
 import folium
 from tensorflow.keras.models import load_model
 from streamlit_folium import folium_static
+from streamlit_modal import Modal
 import json
 
 # Fungsi untuk klasifikasi Weighted KNN dan Gaussian Naive Bayes
@@ -58,6 +59,19 @@ def app():
 
     # Menambahkan judul aplikasi
     st.title('Peta Interaktif Sungai Citarum')
+
+    # Membuat modal pop-up
+    modal = Modal("📘Manual Book CITASI untuk User📘", key="modal")
+
+    # Tampilkan tombol untuk membuka modal
+    if st.button("Buka Panduan Pengguna"):
+    modal.open()
+
+    # Tampilkan modal jika dibuka
+    if modal.is_open():
+    with modal.container():
+        st.write("👇 Silakan lihat Panduan Pengguna untuk Website Citasi di buku manual ini yes! 👇")
+        st.markdown("[Klik ini dan lihat isinya! 😁](https://drive.google.com/file/d/11VKolylps1qELb8sqVaN6zu5S8z0--F_/view?usp=sharing)", unsafe_allow_html=True)
 
     # Pilihan metode machine learning
     st.header("Pilih Model Machine Learning")
