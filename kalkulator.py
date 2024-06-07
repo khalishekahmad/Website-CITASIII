@@ -65,13 +65,13 @@ def app():
 
     # Tampilkan tombol untuk membuka modal
     if st.button("Buka Panduan Pengguna"):
-    modal.open()
+        modal.open()
 
     # Tampilkan modal jika dibuka
     if modal.is_open():
-    with modal.container():
-        st.write("👇 Silakan lihat Panduan Pengguna untuk Website Citasi di buku manual ini yes! 👇")
-        st.markdown("[Klik ini dan lihat isinya! 😁](https://drive.google.com/file/d/11VKolylps1qELb8sqVaN6zu5S8z0--F_/view?usp=sharing)", unsafe_allow_html=True)
+        with modal.container():
+            st.write("👇 Silakan lihat Panduan Pengguna untuk Website Citasi di buku manual ini yes! 👇")
+            st.markdown("[Klik ini dan lihat isinya! 😁](https://drive.google.com/file/d/11VKolylps1qELb8sqVaN6zu5S8z0--F_/view?usp=sharing)", unsafe_allow_html=True)
 
     # Pilihan metode machine learning
     ml_choice = st.selectbox('Silakan pilih metode Machine Learning untuk melihat hasil yang berbeda', ['Weighted KNN', 'Artificial Neural Network', 'Gaussian Naive Bayes'])
