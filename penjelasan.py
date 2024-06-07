@@ -155,6 +155,16 @@ def app():
         st.write('Indeks ini membantu dalam mengidentifikasi tingkat pencemaran dan menentukan langkah pengendalian yang diperlukan untuk menjaga kualitas air dan ekosistem.')
         st.link_button('Baca Selengkapnya', 'https://ppkl.menlhk.go.id/website/filebox/502/180719182446Indeks%20Kualitas%20Air.pdf')
 
+    # Menambahkan judul untuk video
+    st.subheader("Video Pameran CITASI")
+
+    # HTML code untuk menyematkan video YouTube
+    video_html = """
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/O4gGPnAA6vY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+"""
+    # Menampilkan video di Streamlit
+    st.markdown(video_html, unsafe_allow_html=True)
+    
     st.subheader('Team Capstone')
     with st.container():
         col1, col2, col3 = st.columns(3)
