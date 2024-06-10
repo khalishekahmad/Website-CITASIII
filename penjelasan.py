@@ -18,7 +18,7 @@ def app():
 
     # HTML code untuk menyematkan video YouTube
     video_html = """
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/O4gGPnAA6vY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>"""
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/f7Jt8BxxELI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>"""
     
     # Menampilkan video di Streamlit
     st.markdown(video_html, unsafe_allow_html=True)
